@@ -50,3 +50,7 @@ rsconnect/
 
 # Folder with count data
 02_raw_data_counts/
+
+# For quarto
+/.quarto/
+/_site/
