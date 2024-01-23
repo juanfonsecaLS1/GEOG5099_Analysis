@@ -54,3 +54,6 @@ rsconnect/
 # For quarto
 /.quarto/
 /_site/
+
+*.csv
+/metadata/
