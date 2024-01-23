@@ -1,0 +1,181 @@
+---
+title: "Census data"
+author: "Juan Fonseca"
+format: html
+---
+
+## LSOA Boundaries
+
+```{r}
+library(sf)
+library(tidyverse)
+library(tmap)
+library(MinorRoadTraffic)
+```
+
+```{r}
+bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
+
+download_lsoa_2021 <- function(url = "https://github.com/juanfonsecaLS1/GEOG5099_Analysis/releases/download/v0/LSOA_Dec_2021_Boundaries_Generalised_Clipped_EW_BGC_2022_5605507071095448309.geojson",
+                              bounds){
+  
+dir.create(file.path(tempdir(),"lsoa"))
+utils::download.file(url, destfile = file.path(tempdir(),"lsoa","LSOA_2021.geojson"),
+                       mode = "wb")
+  res = sf::read_sf(file.path(tempdir(),"lsoa","LSOA_2021.geojson"))
+  return(res)
+}
+
+lsoa <- download_lsoa_2021()
+
+lsoa_fixed <- lsoa |> st_make_valid()
+lsoa_selected <- lsoa_fixed[bounds,] |> st_transform(4326)
+rm(lsoa,lsoa_fixed)
+  
+```
+```{r}
+lsoa_selected |> 
+  tm_shape()+
+  tm_polygons(col = "blue",
+              alpha = 0.3,
+              border.col = "blue")
+```
+
+## Data
+### Population
+```{r}
+dir.create(file.path(tempdir(),"census"))
+download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts001.zip",
+              destfile = file.path(tempdir(),"census","pop_2021.zip"),
+                       mode = "wb")
+unzip(file.path(tempdir(),"census","pop_2021.zip"))
+pop <- read_csv(unz(file.path(tempdir(),
+                              "census",
+                              "pop_2021.zip"),
+                    "census2021-ts001-lsoa.csv"),
+                col_types = cols(
+  date = col_double(),
+  geography = col_character(),
+  `geography code` = col_character(),
+  `Residence type: Total; measures: Value` = col_double(),
+  `Residence type: Lives in a household; measures: Value` = col_double(),
+  `Residence type: Lives in a communal establishment; measures: Value` = col_double()
+)
+) |> rename_with(.cols = starts_with("Residence"),
+                 ~ gsub("Residence type: ","",.x))
+```
+
+### Exmployment Status
+```{r}
+download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
+              destfile = file.path(tempdir(),"census","employment_2021.zip"),
+                       mode = "wb")
+unzip(file.path(tempdir(),"census","employment_2021.zip"))
+employ <- read_csv(unz(file.path(tempdir(),
+                              "census",
+                              "employment_2021.zip"),
+                    "census2021-ts066-lsoa.csv")
+,
+col_types = cols(
+  date = col_double(),
+  geography = col_character(),
+  `geography code` = col_character(),
+  `Economic activity status: Total: All usual residents aged 16 years and over` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students)` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students):In employment` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students):In employment:Employee` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): In employment: Employee: Part-time` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): In employment: Employee: Full-time` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students):In employment:Self-employed with employees` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): In employment: Self-employed with employees: Part-time` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): In employment: Self-employed with employees: Full-time` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students):In employment:Self-employed without employees` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): In employment: Self-employed without employees: Part-time` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): In employment: Self-employed without employees: Full-time` = col_double(),
+  `Economic activity status: Economically active (excluding full-time students): Unemployed` = col_double(),
+  `Economic activity status: Economically active and a full-time student` = col_double(),
+  `Economic activity status: Economically active and a full-time student:In employment` = col_double(),
+  `Economic activity status: Economically active and a full-time student:In employment:Employee` = col_double(),
+  `Economic activity status: Economically active and a full-time student: In employment: Employee: Part-time` = col_double(),
+  `Economic activity status: Economically active and a full-time student: In employment: Employee: Full-time` = col_double(),
+  `Economic activity status: Economically active and a full-time student:In employment:Self-employed with employees` = col_double(),
+  `Economic activity status: Economically active and a full-time student: In employment: Self-employed with employees: Part-time` = col_double(),
+  `Economic activity status: Economically active and a full-time student: In employment: Self-employed with employees: Full-time` = col_double(),
+  `Economic activity status: Economically active and a full-time student:In employment:Self-employed without employees` = col_double(),
+  `Economic activity status: Economically active and a full-time student: In employment: Self-employed without employees: Part-time` = col_double(),
+  `Economic activity status: Economically active and a full-time student: In employment: Self-employed without employees: Full-time` = col_double(),
+  `Economic activity status: Economically active and a full-time student: Unemployed` = col_double(),
+  `Economic activity status: Economically inactive` = col_double(),
+  `Economic activity status: Economically inactive: Retired` = col_double(),
+  `Economic activity status: Economically inactive: Student` = col_double(),
+  `Economic activity status: Economically inactive: Looking after home or family` = col_double(),
+  `Economic activity status: Economically inactive: Long-term sick or disabled` = col_double(),
+  `Economic activity status: Economically inactive: Other` = col_double()
+)
+) |> rename_with(.cols = starts_with("Economic"),
+                 ~ gsub("Economic activity status: ","",.x))
+```
+
+
+### Car Availability
+
+```{r}
+download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
+              destfile = file.path(tempdir(),"census","car_avail_2021.zip"),
+                       mode = "wb")
+unzip(file.path(tempdir(),"census","car_avail_2021.zip"))
+
+car_avail <- read_csv(unz(file.path(tempdir(),
+                              "census",
+                              "car_avail_2021.zip"),
+                    "census2021-ts045-lsoa.csv"),
+                    col_types = cols(
+  date = col_double(),
+  geography = col_character(),
+  `geography code` = col_character(),
+  `Number of cars or vans: Total: All households` = col_double(),
+  `Number of cars or vans: No cars or vans in household` = col_double(),
+  `Number of cars or vans: 1 car or van in household` = col_double(),
+  `Number of cars or vans: 2 cars or vans in household` = col_double(),
+  `Number of cars or vans: 3 or more cars or vans in household` = col_double()
+)
+) |> rename_with(.cols = starts_with("Number"),
+                 ~ gsub("Number of cars or vans: ","",.x))
+```
+
+```{r}
+download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
+              destfile = file.path(tempdir(),"census","comm_mode_2021.zip"),
+                       mode = "wb")
+unzip(file.path(tempdir(),"census","comm_mode_2021.zip"))
+
+comm_mode <- read_csv(unz(file.path(tempdir(),
+                              "census",
+                              "comm_mode_2021.zip"),
+                    "census2021-ts061-lsoa.csv"),
+                    col_types = cols(
+  date = col_double(),
+  geography = col_character(),
+  `geography code` = col_character(),
+  `Method of travel to workplace: Total: All usual residents aged 16 years and over in employment the week before the census` = col_double(),
+  `Method of travel to workplace: Work mainly at or from home` = col_double(),
+  `Method of travel to workplace: Underground, metro, light rail, tram` = col_double(),
+  `Method of travel to workplace: Train` = col_double(),
+  `Method of travel to workplace: Bus, minibus or coach` = col_double(),
+  `Method of travel to workplace: Taxi` = col_double(),
+  `Method of travel to workplace: Motorcycle, scooter or moped` = col_double(),
+  `Method of travel to workplace: Driving a car or van` = col_double(),
+  `Method of travel to workplace: Passenger in a car or van` = col_double(),
+  `Method of travel to workplace: Bicycle` = col_double(),
+  `Method of travel to workplace: On foot` = col_double(),
+  `Method of travel to workplace: Other method of travel to work` = col_double()
+)
+) |> rename_with(.cols = starts_with("Method"),~ gsub("Method of travel to workplace: ","",.x))
+```
+
+
+```{r}
+pbcc <- download_pbcc() |> semi_join(lsoa_selected,by = c("LSOA11NM"="LSOA21NM"))
+```
+
+

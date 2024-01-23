@@ -1,10 +1,7 @@
 ---
-title: "Loading data"
+title: "Count Data"
 author: "Juan Fonseca"
 format: html
-project:
-  type: website
-  output-dir: docs
 ---
 
 ```{r}
@@ -14,9 +11,6 @@ library(httr)
 library(sf)
 library(tmap)
 ```
-
-## Traffic data
-
 ### Sensor summary
 
 The following code loads the file with the summary of scoot loop sensors in Hull
@@ -127,8 +121,6 @@ tm_basemap()+
   tm_dots()
 ```
 
-
-
 ### Downloading data
 
 Since the open data platform hosting the counts data is based on CKAN, the raw CSV files can be downloaded directly with the following code (see [this](https://docs.ckan.org/en/latest/maintaining/datastore.html#downloading-resources)):
@@ -159,7 +151,7 @@ if (!identical(ids_download, character(0))) {
 } 
 ```
 
-### Processing data
+### Pre-processing
 
 First, we upload the `downloaded_files` object with all the files available
 ```{r}
@@ -184,6 +176,7 @@ Range of dates:
 ```{r}
 raw_data$MeasurementTime |> range()
 ```
+#### Collection rate check
 A check of the number of records per site
 ```{r}
 hist(raw_data |>
@@ -211,12 +204,12 @@ tmap_mode("view")
 tm_basemap()+
   tm_shape(sf_sensors_raw |>
   filter(!(name %in% low_records_IDs)))+
-  tm_dots(fill = "black",
+  tm_dots(col = "black",
           alpha = 0.3,
           group = "Other sites")+
   tm_shape(sf_sensors_raw |>
              filter(name %in% low_records_IDs))+
-  tm_dots(fill = "red",
+  tm_dots(col = "red",
           group = "Low record sites")
 ```
 
@@ -251,7 +244,6 @@ The IDs with low records match exactly the ones previously identified.
 ```{r}
 identical(low_annual_IDs,low_records_IDs)
 ```
-
 These IDs will be discarded as the available data might not be representative to produce AADF; if the ID is part of a group, the whole group will be discarded as AADF for the group can be affected. 
 
 ```{r}
@@ -261,6 +253,7 @@ groups_include <- dir_groups |>
   select(-not_include) 
 ```
 
+#### Daily flows sense check
 
 ```{r}
 total_d_flow <- daily_data |> 
@@ -280,7 +273,7 @@ total_d_flow <- daily_data |>
              col = "#020202")
 
 ```
-
+The daily flows on Christmas day are used a sensible threshold to identify outliers which will be discarded. It is assumed that the lowest traffic over the year occurs on that day.
 ```{r}
 min_Xmas <- daily_data |>
   filter(day(Date)==25,month(Date)==12) |> 
@@ -307,6 +300,8 @@ total_d_flow <- daily_data |>
 
 ```
 
+#### Zero-flow sites check
+
 ```{r}
 site_d_flow <- daily_data |> 
   inner_join(groups_include,by = c("LinkID"="name")) |> 
@@ -325,16 +320,16 @@ tm_basemap()+
   tm_shape(sf_counts |>
              anti_join(no_flow_sites,
                        by = join_by(group_id,subgroup_id)))+
-  tm_dots(fill = "black",alpha = 0.3,group = "Other sites")+
+  tm_dots(col = "black",alpha = 0.3,group = "Other sites")+
   tm_shape(sf_counts |>
              semi_join(no_flow_sites,
                        by = join_by(group_id,subgroup_id)))+
-  tm_dots(fill = "red",group = "Zero counts sites")
+  tm_dots(col = "red",group = "Zero counts sites")
 ```
 
 
 
-Annual Average Daily Flow calculation
+#### Annual Average Daily Flow (AADF) calculation 
 ```{r}
 aadf_data <- site_d_flow |> 
   anti_join(no_flow_sites,
@@ -342,6 +337,8 @@ aadf_data <- site_d_flow |>
   summarise(Flow = mean(Flow),.by = c(Year,group_id,subgroup_id)) |> 
   pivot_wider(names_from = "Year",values_from = "Flow",names_prefix = "flow.")
 ```
+
+#### 2022 vs 2023 flows high-level check
 
 ```{r}
 aadf_checks <- aadf_data |> 
@@ -374,10 +371,30 @@ tm_basemap()+
   tm_shape(sf_counts |>
              anti_join(high_change_counts,
                        by = join_by(group_id,subgroup_id)))+
-  tm_dots(fill = "black",alpha = 0.3,group = "Other sites")+
+  tm_dots(col = "black",alpha = 0.3,group = "Other sites")+
   tm_shape(sf_counts |>
              semi_join(high_change_counts,
                        by = join_by(group_id,subgroup_id)))+
-  tm_dots(fill = "red",group = "High change sites")
+  tm_dots(col = "red",group = "High change sites")
 ```
 
+
+Although these changes seem suspicious, these records will not be discarded for the final analysis.
+
+### Saving results
+
+The spatial object with the counts is updated to be consistent with the AADF dataframe
+
+```{r}
+sf_counts_clean <- sf_counts |>
+  semi_join(aadf_data,
+            by = join_by(group_id,subgroup_id))
+```
+
+The following code produces a `csv` file with the AADF of all sites, and a `geoJSON` file for the .
+```{r}
+dir.create("03_preprocessing_files",showWarnings = F)
+write_csv(aadf_data,file = "03_preprocessing_files/aadf_data.csv",append = F)
+try(file.remove("03_preprocessing_files/grouped_counts.geojson"))
+st_write(sf_counts_clean,"03_preprocessing_files/grouped_counts.geojson",append = F)
+```

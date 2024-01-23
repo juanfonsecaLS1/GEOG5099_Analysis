@@ -1,0 +1,79 @@
+---
+title: "Road Network"
+author: "Juan Fonseca"
+format: html
+---
+```{r}
+library(tidyverse)
+library(dodgr)
+library(osmextract)
+library(sf)
+library(tmap)
+```
+
+The following code uses some functions compiled in the `MinorRoadTraffic` repository prepared by Malcolm Morgan and follows the process described in [this vignette](https://github.com/ITSLeeds/MinorRoadTraffic/blob/main/vignettes/IOW.Rmd) of the same package.
+
+```{r}
+# remotes::install_github("ITSLeeds/MinorRoadTraffic") # if not installed
+library(MinorRoadTraffic)
+```
+
+## Downloading data
+
+```{r}
+osm_raw <- oe_get("East Yorkshire with Hull",
+                 extra_tags = c("ref", "highway", "junction", "maxspeed"))
+```
+
+## Clipping road network
+
+The count data will be used to clip the road network.
+```{r}
+sf_counts <- st_read("03_preprocessing_files/grouped_counts.geojson")
+```
+
+
+```{r}
+buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
+
+bounds <- sf_counts |>
+  make_convex_hull(dist = buffer_distance)
+
+osm_clean = extract_from_osm(osm_raw, bounds)
+
+network = osm_clean$network
+junctions = osm_clean$junctions
+rm(osm_clean, osm_raw)
+```
+
+```{r,include=FALSE}
+if(!file.exists("03_preprocessing_files/bounds.geoJSON")){
+  st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
+  }
+```
+
+
+```{r}
+tmap_mode("view")
+tm_basemap()+
+tm_shape(bounds)+
+  tm_polygons(alpha = 0.3)+
+  tm_shape(network)+
+  tm_lines(col = "orange",alpha = 0.4)+
+  tm_shape(sf_counts)+
+  tm_dots(col = "blue")
+```
+
+## Cleaning and simplifying
+The `ref` attribute is filled based on the neighbouring links. 
+```{r}
+source("osm_fill_ref2.R")
+network_fill2 = osm_fill_ref2(network)
+```
+## Spatial join to count data
+
+```{r}
+
+```
+
+
