@@ -9,6 +9,7 @@ library(dodgr)
 library(osmextract)
 library(sf)
 library(tmap)
+library(stplanr)
 ```
 
 The following code uses some functions compiled in the `MinorRoadTraffic` repository prepared by Malcolm Morgan and follows the process described in [this vignette](https://github.com/ITSLeeds/MinorRoadTraffic/blob/main/vignettes/IOW.Rmd) of the same package.
@@ -55,7 +56,7 @@ if(!file.exists("03_preprocessing_files/bounds.geoJSON")){
 ## Cleaning and simplifying
 The `ref` attribute is filled based on the neighbouring links. 
 ```{r}
-network_fill2 = osm_fill_ref2(network)
+network_fill = osm_fill_ref2(network)
 ```
 ## Saving data
 ```{r}
@@ -73,14 +74,15 @@ aadf_data <- read_csv(
     flow.2023 = col_double()
     )
   )
-
-sf_aadf <- sf_counts |> 
-  left_join(aadf_data,by = join_by(group_id, subgroup_id)) |> 
-  mutate(rd_name = str_trim(str_remove(desc,pattern = "^\\w*"))) |> 
-  mutate(rd_name = str_remove(rd_name,pattern = "^SITE _ ")) |> 
-  mutate(rd_name = str_remove(rd_name,pattern = "A63 (/ )?")) |> 
-  separate_wider_delim(cols = rd_name,delim = " / ",names_sep = "rd",too_few = "debug")
 ```
+
+Joining the counts and the spatial data
+```{r}
+sf_aadf <- sf_counts |> 
+  left_join(aadf_data,by = join_by(group_id, subgroup_id))
+```
+
+A quick visualisation
 
 ```{r}
 tmap_mode("view")
@@ -91,6 +93,79 @@ tm_shape(bounds)+
   tm_lines(col = "orange",alpha = 0.4)+
   tm_shape(sf_aadf)+
   tm_dots(col = "blue")
+```
+
+
+It is assumed that the locations of the loops do not have major error, thus their are assigned to the nearest network link. A quick check of the bearing based on the direction is performed, although it was noticed that some of the descriptions are not accurate.
+
+```{r}
+lines <- network_fill
+junctions <- junctions
+
+traffic <- sf_aadf
+
+
+major_ref = c("motorway",
+              "motorway_link",
+              "primary",
+              "primary_link",
+              "trunk",
+              "trunk_link")
+
+
+lines$bearing <- stplanr::line_bearing(l = lines)
+
+lines$road_type <-
+  dplyr::if_else(lines$highway %in% major_ref, "major", "minor")
+
+
+# Transform to Britsh National Grid
+lines = sf::st_transform(lines, 27700)
+junctions = sf::st_transform(junctions, 27700)
+traffic = sf::st_transform(traffic, 27700)
+bounds = sf::st_transform(bounds, 27700)
+
+traffic$nearest_road <- st_nearest_feature(traffic, lines)
+
+
+
+traffic$bearing <- lines$bearing[traffic$nearest_road]
+
+dirs_tbl <-
+  tibble(
+    dir_str = c(
+      "southbound",
+      "westbound",
+      "northbound",
+      "eastbound",
+      "northeastbound",
+      "northwestbound",
+      "southeastbound",
+      "southwestbound"
+    ),
+    t_bearing = c(180, -90, 0, 90,
+                  45, -45, -135, 135)
+  )
+
+tolerance <- 50
+
+traffic_check <- traffic |>
+  left_join(dirs_tbl, by = "dir_str") |>
+  mutate(
+    bearing_check_1 = abs(bearing - t_bearing),
+    bearing_check_2 = 180 - abs(bearing - t_bearing),
+    bearing_check = bearing_check_1 < tolerance | bearing_check_2 < tolerance)
+
+```
+
+
+```{r}
+tm_basemap()+
+    tm_shape(lines)+
+    tm_lines(col = "orange")+
+    tm_shape(traffic_check)+
+    tm_dots(col = "bearing_check",popup.vars = TRUE)
+  
 ```
 
 

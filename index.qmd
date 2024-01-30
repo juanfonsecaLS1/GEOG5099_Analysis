@@ -1,5 +1,5 @@
 ---
-title: "Intro"
+title: "Home"
 ---
 
 This repository contains the code produced for a traffic estimation project

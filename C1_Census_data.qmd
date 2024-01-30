@@ -31,8 +31,9 @@ lsoa <- download_lsoa_2021()
 lsoa_fixed <- lsoa |> st_make_valid()
 lsoa_selected <- lsoa_fixed[bounds,] |> st_transform(4326)
 rm(lsoa,lsoa_fixed)
-  
+gc()
 ```
+
 ```{r}
 lsoa_selected |> 
   tm_shape()+
@@ -48,7 +49,6 @@ dir.create(file.path(tempdir(),"census"))
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts001.zip",
               destfile = file.path(tempdir(),"census","pop_2021.zip"),
                        mode = "wb")
-unzip(file.path(tempdir(),"census","pop_2021.zip"))
 pop <- read_csv(unz(file.path(tempdir(),
                               "census",
                               "pop_2021.zip"),
@@ -70,7 +70,7 @@ pop <- read_csv(unz(file.path(tempdir(),
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
               destfile = file.path(tempdir(),"census","employment_2021.zip"),
                        mode = "wb")
-unzip(file.path(tempdir(),"census","employment_2021.zip"))
+
 employ <- read_csv(unz(file.path(tempdir(),
                               "census",
                               "employment_2021.zip"),
@@ -123,8 +123,6 @@ col_types = cols(
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
               destfile = file.path(tempdir(),"census","car_avail_2021.zip"),
                        mode = "wb")
-unzip(file.path(tempdir(),"census","car_avail_2021.zip"))
-
 car_avail <- read_csv(unz(file.path(tempdir(),
                               "census",
                               "car_avail_2021.zip"),
@@ -147,19 +145,16 @@ car_avail <- read_csv(unz(file.path(tempdir(),
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
               destfile = file.path(tempdir(),"census","comm_mode_2021.zip"),
                        mode = "wb")
-unzip(file.path(tempdir(),"census","comm_mode_2021.zip"))
-
 comm_mode <- read_csv(
   unz(file.path(tempdir(),
                 "census",
                 "comm_mode_2021.zip"),
-      "census2021-ts061-lsoa.csv"),
+      "census2021-ts061-lsoa.csv",),
   col_types = cols(
     date = col_double(),
     geography = col_character(),
     `geography code` = col_character(),
-    `Method of travel to workplace: Total: All usual residents aged 16 years and over
-    in employment the week before the census` = col_double(),
+    `Method of travel to workplace: Total: All usual residents aged 16 years and over in employment the week before the census` = col_double(),
     `Method of travel to workplace: Work mainly at or from home` = col_double(),
     `Method of travel to workplace: Underground, metro, light rail, tram` = col_double(),
     `Method of travel to workplace: Train` = col_double(),

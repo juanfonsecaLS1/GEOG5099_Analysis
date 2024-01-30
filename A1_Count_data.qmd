@@ -11,6 +11,7 @@ library(httr)
 library(sf)
 library(tmap)
 ```
+
 ### Sensor summary
 
 The following code loads the file with the summary of scoot loop sensors in Hull
@@ -42,6 +43,7 @@ tm_basemap() +
 		tm_shape(sf_cameras) +
 		tm_dots()
 ```
+
 There are some issues with the coordinates of some sites. The following code fixes the problem
 
 ```{r}
@@ -56,7 +58,6 @@ my_data_expanded <- my_data |>
   separate_wider_delim(description,delim = " - ",names = c("desc","direction","url","coord")) |>
   select(-coord)
 ```
-
 
 ```{r}
 sf_sensors_raw <- my_data_expanded |> 
@@ -89,6 +90,7 @@ tm_basemap() +
 sensors_overlap = st_intersects(sensors_buffer_5,sensors_buffer_5) |> unique()
 head(sensors_overlap)
 ```
+
 ```{r}
 dir_groups <- do.call(bind_rows,
                       lapply(seq_along(sensors_overlap),
@@ -154,6 +156,7 @@ if (!identical(ids_download, character(0))) {
 ### Pre-processing
 
 First, we upload the `downloaded_files` object with all the files available
+
 ```{r}
 downloaded_files_full <- list.files("02_raw_data_counts/",full.names = T)
 ```
@@ -166,18 +169,25 @@ setDTthreads(0)
 raw_data <- rbindlist(lapply(downloaded_files_full,fread))
 head(raw_data)
 ```
+
 Some general checks of the data
 
 Number of sites in the raw data:
+
 ```{r}
 raw_data$LinkID |> unique() |> length()
 ```
+
 Range of dates:
+
 ```{r}
 raw_data$MeasurementTime |> range()
 ```
+
 #### Collection rate check
+
 A check of the number of records per site
+
 ```{r}
 hist(raw_data |>
        summarise(records = n(),.by = LinkID) |>
@@ -187,7 +197,9 @@ hist(raw_data |>
      main = "Distribution of total records per LinkID")
 
 ```
+
 A closer look to the sites with a low number of records:
+
 ```{r}
 low_records_IDs <- raw_data |>
   filter(between(year(MeasurementTime),2022,2023)) |> 
@@ -225,6 +237,7 @@ daily_data <- raw_data[between(year(MeasurementTime),2022,2023)
 ```
 
 Records per day per site by Year (max 288 5-minutes intervals)
+
 ```{r}
 daily_data[,.(records = mean(records)),
   .(LinkID, Year)] |> 
@@ -233,7 +246,9 @@ ggplot(aes(records))+
   facet_grid(Year~.)+
   theme_light()
 ```
+
 To identify the IDs with a low number of daily records, we run:
+
 ```{r}
 low_annual_IDs <- unique(daily_data[,c("Year","LinkID","Date")])[,
                                                .(n_days = .N),
@@ -241,10 +256,12 @@ low_annual_IDs <- unique(daily_data[,c("Year","LinkID","Date")])[,
 ```
 
 The IDs with low records match exactly the ones previously identified.
+
 ```{r}
 identical(low_annual_IDs,low_records_IDs)
 ```
-These IDs will be discarded as the available data might not be representative to produce AADF; if the ID is part of a group, the whole group will be discarded as AADF for the group can be affected. 
+
+These IDs will be discarded as the available data might not be representative to produce AADF; if the ID is part of a group, the whole group will be discarded as AADF for the group can be affected.
 
 ```{r}
 groups_include <- dir_groups |> 
@@ -273,7 +290,9 @@ total_d_flow <- daily_data |>
              col = "#020202")
 
 ```
+
 The daily flows on Christmas day are used a sensible threshold to identify outliers which will be discarded. It is assumed that the lowest traffic over the year occurs on that day.
+
 ```{r}
 min_Xmas <- daily_data |>
   filter(day(Date)==25,month(Date)==12) |> 
@@ -327,9 +346,8 @@ tm_basemap()+
   tm_dots(col = "red",group = "Zero counts sites")
 ```
 
+#### Annual Average Daily Flow (AADF) calculation
 
-
-#### Annual Average Daily Flow (AADF) calculation 
 ```{r}
 aadf_data <- site_d_flow |> 
   anti_join(no_flow_sites,
@@ -361,6 +379,7 @@ aadf_checks <- aadf_data |>
   theme_light()+
   coord_fixed()
 ```
+
 ```{r}
 high_change_counts <- aadf_checks |>
   filter(abs(pdiff)>0.5|is.nan(pdiff))
@@ -378,20 +397,62 @@ tm_basemap()+
   tm_dots(col = "red",group = "High change sites")
 ```
 
-
 Although these changes seem suspicious, these records will not be discarded for the final analysis.
-
-### Saving results
 
 The spatial object with the counts is updated to be consistent with the AADF dataframe
 
 ```{r}
-sf_counts_clean <- sf_counts |>
+sf_counts_selected <- sf_counts |>
   semi_join(aadf_data,
             by = join_by(group_id,subgroup_id))
 ```
 
+#### Flow direction extraction
+
+The description of the count sites refers to the junction where the induction loops are installed, and not necessarily correspond to actual road where they are installed. Given this, it is necessary to extract the direction description to produce a theoretical bearing which will be used when assigning the counts to the network links.
+
+The sites shown in the map below, for example, are all described as "TSI047 COUNTY ROAD / BRICKNALL AVE", but they correspond to the four arms of the junction with sensors on Fairfax Ave, Bricknell Ave, and National Ave.
+
+```{r}
+tmap_mode("view")
+tm_basemap("OpenStreetMap")+
+  tm_shape(sf_counts |>
+             filter(str_detect(desc,"TSI047 COUNTY ROAD / BRICKNALL AVE")))+
+  tm_dots(col = "darkgreen",
+          alpha = 0.7,
+          group = "Selected sites")
+```
+
+Two count points need to be adjusted manually: 
+- there is no a valid description of the direction of `group_id` 136. See [this](https://maps.app.goo.gl/3rBHcqJooss6Z5Zp9).
+- there is a typo in the direction of `group_id` 176
+
+```{r}
+sf_counts_selected$direction[sf_counts_selected$group_id == 136] <- "EASTBOUND"
+sf_counts_selected$direction[sf_counts_selected$group_id == 176] <- "WESTBOUND"
+```
+
+```{r}
+sf_counts_clean <- sf_counts_selected |> 
+  mutate(dir_str = str_to_lower(direction) |> 
+           str_extract(pattern = "\\b\\w*bound\\b")) |> 
+  mutate(origin_str = if_else(is.na(dir_str),
+                           direction |> 
+                             str_remove("TRAVEL{1,3}ING ") |>
+                             str_remove("\\sINTENDING") |>
+                             str_extract("\\w*(\\s)?\\w*\\b(?=\\sTO)"),
+                           NA)) |> 
+  mutate(dir_str = case_when(is.na(dir_str)&origin_str=="EAST"~"westbound",
+                             is.na(dir_str)&origin_str=="NORTH"~"southbound",
+                             is.na(dir_str)&origin_str=="SOUTH WEST"~"northeastbound",
+                             TRUE ~ dir_str)) |> 
+  select(-origin_str)
+```
+
+### Saving results
+
 The following code produces a `csv` file with the AADF of all sites, and a `geoJSON` file for the .
+
 ```{r}
 dir.create("03_preprocessing_files",showWarnings = F)
 write_csv(aadf_data,file = "03_preprocessing_files/aadf_data.csv",append = F)
