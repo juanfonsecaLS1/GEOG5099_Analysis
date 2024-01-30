@@ -149,33 +149,38 @@ download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zi
                        mode = "wb")
 unzip(file.path(tempdir(),"census","comm_mode_2021.zip"))
 
-comm_mode <- read_csv(unz(file.path(tempdir(),
-                              "census",
-                              "comm_mode_2021.zip"),
-                    "census2021-ts061-lsoa.csv"),
-                    col_types = cols(
-  date = col_double(),
-  geography = col_character(),
-  `geography code` = col_character(),
-  `Method of travel to workplace: Total: All usual residents aged 16 years and over in employment the week before the census` = col_double(),
-  `Method of travel to workplace: Work mainly at or from home` = col_double(),
-  `Method of travel to workplace: Underground, metro, light rail, tram` = col_double(),
-  `Method of travel to workplace: Train` = col_double(),
-  `Method of travel to workplace: Bus, minibus or coach` = col_double(),
-  `Method of travel to workplace: Taxi` = col_double(),
-  `Method of travel to workplace: Motorcycle, scooter or moped` = col_double(),
-  `Method of travel to workplace: Driving a car or van` = col_double(),
-  `Method of travel to workplace: Passenger in a car or van` = col_double(),
-  `Method of travel to workplace: Bicycle` = col_double(),
-  `Method of travel to workplace: On foot` = col_double(),
-  `Method of travel to workplace: Other method of travel to work` = col_double()
-)
-) |> rename_with(.cols = starts_with("Method"),~ gsub("Method of travel to workplace: ","",.x))
+comm_mode <- read_csv(
+  unz(file.path(tempdir(),
+                "census",
+                "comm_mode_2021.zip"),
+      "census2021-ts061-lsoa.csv"),
+  col_types = cols(
+    date = col_double(),
+    geography = col_character(),
+    `geography code` = col_character(),
+    `Method of travel to workplace: Total: All usual residents aged 16 years and over
+    in employment the week before the census` = col_double(),
+    `Method of travel to workplace: Work mainly at or from home` = col_double(),
+    `Method of travel to workplace: Underground, metro, light rail, tram` = col_double(),
+    `Method of travel to workplace: Train` = col_double(),
+    `Method of travel to workplace: Bus, minibus or coach` = col_double(),
+    `Method of travel to workplace: Taxi` = col_double(),
+    `Method of travel to workplace: Motorcycle, scooter or moped` = col_double(),
+    `Method of travel to workplace: Driving a car or van` = col_double(),
+    `Method of travel to workplace: Passenger in a car or van` = col_double(),
+    `Method of travel to workplace: Bicycle` = col_double(),
+    `Method of travel to workplace: On foot` = col_double(),
+    `Method of travel to workplace: Other method of travel to work` = col_double()
+  )
+  ) |>
+  rename_with(.cols = starts_with("Method"),
+              ~ gsub("Method of travel to workplace: ","",.x))
 ```
 
 
 ```{r}
-pbcc <- download_pbcc() |> semi_join(lsoa_selected,by = c("LSOA11NM"="LSOA21NM"))
+pbcc <- download_pbcc() |>
+  semi_join(lsoa_selected,by = c("LSOA11NM"="LSOA21NM"))
 ```
 
 

@@ -52,6 +52,35 @@ if(!file.exists("03_preprocessing_files/bounds.geoJSON")){
   }
 ```
 
+## Cleaning and simplifying
+The `ref` attribute is filled based on the neighbouring links. 
+```{r}
+network_fill2 = osm_fill_ref2(network)
+```
+## Saving data
+```{r}
+try(st_write(network_fill2,"03_preprocessing_files/network.geoJSON"),silent = T)
+```
+## Spatial join with counts
+
+```{r}
+aadf_data <- read_csv(
+  "03_preprocessing_files/aadf_data.csv",
+  col_types = cols(
+    group_id = col_double(),
+    subgroup_id = col_double(),
+    flow.2022 = col_double(),
+    flow.2023 = col_double()
+    )
+  )
+
+sf_aadf <- sf_counts |> 
+  left_join(aadf_data,by = join_by(group_id, subgroup_id)) |> 
+  mutate(rd_name = str_trim(str_remove(desc,pattern = "^\\w*"))) |> 
+  mutate(rd_name = str_remove(rd_name,pattern = "^SITE _ ")) |> 
+  mutate(rd_name = str_remove(rd_name,pattern = "A63 (/ )?")) |> 
+  separate_wider_delim(cols = rd_name,delim = " / ",names_sep = "rd",too_few = "debug")
+```
 
 ```{r}
 tmap_mode("view")
@@ -60,20 +89,9 @@ tm_shape(bounds)+
   tm_polygons(alpha = 0.3)+
   tm_shape(network)+
   tm_lines(col = "orange",alpha = 0.4)+
-  tm_shape(sf_counts)+
+  tm_shape(sf_aadf)+
   tm_dots(col = "blue")
 ```
 
-## Cleaning and simplifying
-The `ref` attribute is filled based on the neighbouring links. 
-```{r}
-source("osm_fill_ref2.R")
-network_fill2 = osm_fill_ref2(network)
-```
-## Spatial join to count data
-
-```{r}
-
-```
 
 
