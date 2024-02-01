@@ -1,5 +1,5 @@
-# Estimating Traffic in Minor Roads Flows Using Open Data
-Juan Pablo Fonseca-Zamora
+Traffic Estimation Using Open Data
+================
 
 ***THIS IS WORK IN PROGRESS***
 

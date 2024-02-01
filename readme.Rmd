@@ -1,17 +1,7 @@
 ---
-title: "Estimating Traffic in Minor Roads Flows Using Open Data"
-author:
-  - name: 
-      given: Juan Pablo
-      family: Fonseca-Zamora
-    id: jpfz
-    orcid: 0009-0006-7042-3828
-    email: ts18jpf@leeds.ac.uk
-    affiliation: 
-      - name: University of Leeds
-format: gfm
+title: "Traffic Estimation Using Open Data"
+output: github_document
 ---
-
 ***THIS IS WORK IN PROGRESS***
 
 This is a short research project with the aim of exploring the potential of two elements for network-wide traffic estimation in the area of Hull:

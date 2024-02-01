@@ -6,14 +6,14 @@ format: html
 
 ## LSOA Boundaries
 
-```{r}
+```{r libraries}
 library(sf)
 library(tidyverse)
 library(tmap)
 library(MinorRoadTraffic)
 ```
 
-```{r}
+```{r lsoa_boundaries}
 bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
 
 download_lsoa_2021 <- function(url = "https://github.com/juanfonsecaLS1/GEOG5099_Analysis/releases/download/v0/LSOA_Dec_2021_Boundaries_Generalised_Clipped_EW_BGC_2022_5605507071095448309.geojson",
@@ -34,9 +34,10 @@ rm(lsoa,lsoa_fixed)
 gc()
 ```
 
-```{r}
-lsoa_selected |> 
-  tm_shape()+
+```{r map_lsoa}
+tmap_mode("plot")
+tm_basemap("OpenStreetMap")+
+  tm_shape(lsoa_selected)+
   tm_polygons(col = "blue",
               alpha = 0.3,
               border.col = "blue")
@@ -44,7 +45,7 @@ lsoa_selected |>
 
 ## Data
 ### Population
-```{r}
+```{r census_population}
 dir.create(file.path(tempdir(),"census"))
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts001.zip",
               destfile = file.path(tempdir(),"census","pop_2021.zip"),
@@ -66,7 +67,7 @@ pop <- read_csv(unz(file.path(tempdir(),
 ```
 
 ### Exmployment Status
-```{r}
+```{r census_employment}
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
               destfile = file.path(tempdir(),"census","employment_2021.zip"),
                        mode = "wb")
@@ -119,7 +120,7 @@ col_types = cols(
 
 ### Car Availability
 
-```{r}
+```{r census_caravail}
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
               destfile = file.path(tempdir(),"census","car_avail_2021.zip"),
                        mode = "wb")
@@ -140,8 +141,8 @@ car_avail <- read_csv(unz(file.path(tempdir(),
 ) |> rename_with(.cols = starts_with("Number"),
                  ~ gsub("Number of cars or vans: ","",.x))
 ```
-
-```{r}
+### Method to work (mode)
+```{r census_commute_mode}
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
               destfile = file.path(tempdir(),"census","comm_mode_2021.zip"),
                        mode = "wb")
@@ -171,9 +172,9 @@ comm_mode <- read_csv(
   rename_with(.cols = starts_with("Method"),
               ~ gsub("Method of travel to workplace: ","",.x))
 ```
+### Data from Carbon Calculation
 
-
-```{r}
+```{r carboncalc_data}
 pbcc <- download_pbcc() |>
   semi_join(lsoa_selected,by = c("LSOA11NM"="LSOA21NM"))
 ```

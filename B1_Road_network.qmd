@@ -3,7 +3,7 @@ title: "Road Network"
 author: "Juan Fonseca"
 format: html
 ---
-```{r}
+```{r libraries}
 library(tidyverse)
 library(dodgr)
 library(osmextract)
@@ -14,14 +14,14 @@ library(stplanr)
 
 The following code uses some functions compiled in the `MinorRoadTraffic` repository prepared by Malcolm Morgan and follows the process described in [this vignette](https://github.com/ITSLeeds/MinorRoadTraffic/blob/main/vignettes/IOW.Rmd) of the same package.
 
-```{r}
+```{r minor_library}
 # remotes::install_github("ITSLeeds/MinorRoadTraffic") # if not installed
 library(MinorRoadTraffic)
 ```
 
 ## Downloading data
 
-```{r}
+```{r osm_get}
 osm_raw <- oe_get("East Yorkshire with Hull",
                  extra_tags = c("ref", "highway", "junction", "maxspeed"))
 ```
@@ -29,12 +29,12 @@ osm_raw <- oe_get("East Yorkshire with Hull",
 ## Clipping road network
 
 The count data will be used to clip the road network.
-```{r}
+```{r sf_counts}
 sf_counts <- st_read("03_preprocessing_files/grouped_counts.geojson")
 ```
 
 
-```{r}
+```{r clipping}
 buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
 
 bounds <- sf_counts |>
@@ -47,24 +47,24 @@ junctions = osm_clean$junctions
 rm(osm_clean, osm_raw)
 ```
 
-```{r,include=FALSE}
-if(!file.exists("03_preprocessing_files/bounds.geoJSON")){
-  st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
-  }
+```{r saving_bounds,include=FALSE}
+try(file.remove("03_preprocessing_files/bounds.geoJSON"))
+st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
 ```
 
 ## Cleaning and simplifying
 The `ref` attribute is filled based on the neighbouring links. 
-```{r}
+```{r attr_filling}
 network_fill = osm_fill_ref2(network)
 ```
 ## Saving data
-```{r}
+```{r saving_network}
+try(file.remove("03_preprocessing_files/network.geoJSON"))
 try(st_write(network_fill2,"03_preprocessing_files/network.geoJSON"),silent = T)
 ```
 ## Spatial join with counts
 
-```{r}
+```{r load_aadf}
 aadf_data <- read_csv(
   "03_preprocessing_files/aadf_data.csv",
   col_types = cols(
@@ -77,16 +77,16 @@ aadf_data <- read_csv(
 ```
 
 Joining the counts and the spatial data
-```{r}
+```{r join_counts}
 sf_aadf <- sf_counts |> 
   left_join(aadf_data,by = join_by(group_id, subgroup_id))
 ```
 
 A quick visualisation
 
-```{r}
-tmap_mode("view")
-tm_basemap()+
+```{r map_net_counts}
+tmap_mode("plot")
+tm_basemap("OpenStreetMap")+
 tm_shape(bounds)+
   tm_polygons(alpha = 0.3)+
   tm_shape(network)+
@@ -98,7 +98,7 @@ tm_shape(bounds)+
 
 It is assumed that the locations of the loops do not have major error, thus their are assigned to the nearest network link. A quick check of the bearing based on the direction is performed, although it was noticed that some of the descriptions are not accurate.
 
-```{r}
+```{r aadf_assign}
 lines <- network_fill
 junctions <- junctions
 
@@ -159,8 +159,9 @@ traffic_check <- traffic |>
 ```
 
 
-```{r}
-tm_basemap()+
+```{r map_bearing_check}
+
+tm_basemap("OpenStreetMap")+
     tm_shape(lines)+
     tm_lines(col = "orange")+
     tm_shape(traffic_check)+
