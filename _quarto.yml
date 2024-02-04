@@ -12,9 +12,9 @@ website:
       - index.qmd
       - section: "Preprocessing"
         contents:
-          - A1_Count_data.qmd
-          - B1_Road_network.qmd
-          - C1_Census_data.qmd
+          - 1A_Count_data.qmd
+          - 1B_Road_network.qmd
+          - 1C_Census_data.qmd
       - section: "Exploratory Analysis"
       - section: "Estimation models"
       
