@@ -17,7 +17,8 @@ website:
           - 1C_Census_data.qmd
       - section: "Exploratory Analysis"
       - section: "Estimation models"
-      
+        contents:
+          - 2B_Causal_model.qmd
 format:
   html:
     toc: true

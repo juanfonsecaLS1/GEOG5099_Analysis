@@ -74,12 +74,13 @@ tm_basemap("OpenStreetMap") +
 #### Grouping sensors
 
 ```{r}
-sensors_buffer_5 = sf_sensors_raw |> st_buffer(dist = 5)
+sensors_buffer = sf_sensors_raw |>
+  st_buffer(dist = 20)
 ```
 
 ```{r map_sites_combine_sample}
 tm_basemap("OpenStreetMap") +
-  tm_shape(sensors_buffer_5 |> 
+  tm_shape(sensors_buffer |> 
              filter(name %in% c("N44131F","N44131X","N44131H"))) +
 		tm_polygons(alpha = 0.4)+
 		tm_shape(sf_sensors_raw) +
@@ -87,8 +88,61 @@ tm_basemap("OpenStreetMap") +
 ```
 
 ```{r overlap_list}
-sensors_overlap = st_intersects(sensors_buffer_5,sensors_buffer_5) |> unique()
-head(sensors_overlap)
+buffer_groups  <- st_cast(st_union(sensors_buffer),"POLYGON")
+sensors_overlap <- st_intersects(buffer_groups,sf_sensors_raw)
+sensors_overlap
+```
+
+#### Flow Direction refining
+
+The description of the count sites refers to the junction where the induction loops are installed, and not necessarily correspond to actual road where they are installed.
+
+The sites shown in the map below, for example, are all described as "TSI047 COUNTY ROAD / BRICKNALL AVE", but they correspond to the four arms of the junction with sensors on Fairfax Ave, Bricknell Ave, and National Ave.
+
+```{r dir_extract1}
+tmap_mode("view")
+tm_basemap("OpenStreetMap")+
+  tm_shape(sf_sensors_raw |>
+             filter(str_detect(desc,"TSI047 COUNTY ROAD / BRICKNALL AVE")))+
+  tm_dots(col = "darkgreen",
+          size = 2,
+          alpha = 0.7,
+          group = "Selected sites")
+```
+
+Also, the direction of the different counts, in some cases, refer to the specific lane where the sensors are installed. Therefore, it is useful to extract the flow direction from description.
+
+Some count points need to be adjusted manually:
+- there is no a valid description of the direction of sensor `N43121Y`. See [this](https://maps.app.goo.gl/3rBHcqJooss6Z5Zp9). 
+- there is a typo (*wesbound* instead of *wes**t**bound*) in the direction of sensors `N40134F`and `N45131D`.
+
+```{r dir_manual_fixes}
+my_data_expanded$direction[my_data_expanded$name == "N43121Y"] <- "EASTBOUND"
+my_data_expanded$direction[my_data_expanded$name %in% c("N40134F", "N45131D")] <- "WESTBOUND"
+```
+
+```{r sf_clean2}
+my_data_expanded_dir <- my_data_expanded |> 
+  mutate(dir_str = str_to_lower(direction) |> 
+           str_extract(pattern = "\\b\\w*bound\\b")) |> 
+  mutate(origin_str = if_else(is.na(dir_str),
+                           direction |> 
+                             str_remove("TRAVEL{1,3}ING ") |>
+                             str_remove("\\sINTENDING") |>
+                             str_extract("\\w*(\\s)?\\w*\\b(?=\\sTO)"),
+                           NA)) |> 
+  mutate(dir_str = case_when(is.na(dir_str)&origin_str=="EAST"~"westbound",
+                             is.na(dir_str)&origin_str=="NORTH"~"southbound",
+                             is.na(dir_str)&origin_str=="SOUTH WEST"~"northeastbound",
+                             is.na(dir_str)&origin_str=="SOUTH"~"northbound",
+                             is.na(dir_str)&origin_str=="WEST"~"eastbound",
+                             is.na(dir_str)&origin_str=="SOUTH NORTH"~"northbound",
+                             is.na(dir_str)&str_detect(direction,"FROM THE NORTH")~"southbound",
+                             is.na(dir_str)&str_detect(direction,"FROM THE SOUTH")~"northbound",
+                             is.na(dir_str)&str_detect(direction,"FROM THE EAST")~"westbound",
+                             is.na(dir_str)&str_detect(direction,"FROM THE WEST")~"eastbound",
+                             TRUE ~ dir_str)) |> 
+  select(-origin_str)
 ```
 
 ```{r sensor_groups}
@@ -97,19 +151,19 @@ dir_groups <- do.call(bind_rows,
                              function(i){
                                tsensor <-  sensors_overlap[[i]]
                                id_group  <- i
-                               tmp_group <- my_data_expanded[tsensor,] |>
+                               tmp_group <- my_data_expanded_dir[tsensor,] |>
                                  mutate(subgroup_id = cur_group_id(),
                                         group_id = id_group,
-                                        .by = c(desc,direction)) |>
-                                 select(name,desc,direction,group_id,subgroup_id)
+                                        .by = c(desc,dir_str)) |>
+                                 select(name,desc,dir_str,group_id,subgroup_id)
                                })) 
 ```
 
 ```{r grouped_sf}
-sf_counts <- my_data_expanded |> 
-  left_join(dir_groups,by = join_by(name,desc,direction)) |> 
+sf_counts <- my_data_expanded_dir |> 
+  left_join(dir_groups,by = join_by(name,desc,dir_str)) |> 
   summarise(across(ends_with("itude"),mean),
-            .by = c(group_id,subgroup_id,desc,direction)) |> 
+            .by = c(group_id,subgroup_id,desc,dir_str)) |> 
   st_as_sf(
     coords = c("longitude","latitude"),
     crs = 4326) |>
@@ -266,7 +320,7 @@ These IDs will be discarded as the available data might not be representative to
 ```{r data_clean}
 groups_include <- dir_groups |> 
   mutate(not_include = (name %in% low_annual_IDs)*1) |> 
-  filter(sum(not_include)==0,.by = c(desc,direction,group_id)) |>
+  filter(sum(not_include)==0,.by = c(desc,dir_str,group_id)) |>
   select(-not_include) 
 ```
 
@@ -408,48 +462,6 @@ sf_counts_selected <- sf_counts |>
             by = join_by(group_id,subgroup_id))
 ```
 
-#### Flow direction extraction
-
-The description of the count sites refers to the junction where the induction loops are installed, and not necessarily correspond to actual road where they are installed. Given this, it is necessary to extract the direction description to produce a theoretical bearing which will be used when assigning the counts to the network links.
-
-The sites shown in the map below, for example, are all described as "TSI047 COUNTY ROAD / BRICKNALL AVE", but they correspond to the four arms of the junction with sensors on Fairfax Ave, Bricknell Ave, and National Ave.
-
-```{r dir_extract2}
-tmap_mode("plot")
-tm_basemap("OpenStreetMap")+
-  tm_shape(sf_counts |>
-             filter(str_detect(desc,"TSI047 COUNTY ROAD / BRICKNALL AVE")))+
-  tm_dots(col = "darkgreen",
-          alpha = 0.7,
-          group = "Selected sites")
-```
-
-Two count points need to be adjusted manually: 
-- there is no a valid description of the direction of `group_id` 136. See [this](https://maps.app.goo.gl/3rBHcqJooss6Z5Zp9).
-- there is a typo in the direction of `group_id` 176
-
-```{r dir_manual_fixes}
-sf_counts_selected$direction[sf_counts_selected$group_id == 136] <- "EASTBOUND"
-sf_counts_selected$direction[sf_counts_selected$group_id == 176] <- "WESTBOUND"
-```
-
-```{r sf_clean2}
-sf_counts_clean <- sf_counts_selected |> 
-  mutate(dir_str = str_to_lower(direction) |> 
-           str_extract(pattern = "\\b\\w*bound\\b")) |> 
-  mutate(origin_str = if_else(is.na(dir_str),
-                           direction |> 
-                             str_remove("TRAVEL{1,3}ING ") |>
-                             str_remove("\\sINTENDING") |>
-                             str_extract("\\w*(\\s)?\\w*\\b(?=\\sTO)"),
-                           NA)) |> 
-  mutate(dir_str = case_when(is.na(dir_str)&origin_str=="EAST"~"westbound",
-                             is.na(dir_str)&origin_str=="NORTH"~"southbound",
-                             is.na(dir_str)&origin_str=="SOUTH WEST"~"northeastbound",
-                             TRUE ~ dir_str)) |> 
-  select(-origin_str)
-```
-
 ### Saving results
 
 The following code produces a `csv` file with the AADF of all sites, and a `geoJSON` file for the .
@@ -458,5 +470,5 @@ The following code produces a `csv` file with the AADF of all sites, and a `geoJ
 dir.create("03_preprocessing_files",showWarnings = F)
 write_csv(aadf_data,file = "03_preprocessing_files/aadf_data.csv",append = F)
 try(file.remove("03_preprocessing_files/grouped_counts.geojson"))
-st_write(sf_counts_clean,"03_preprocessing_files/grouped_counts.geojson",append = F)
+st_write(sf_counts_selected,"03_preprocessing_files/grouped_counts.geojson",append = F)
 ```

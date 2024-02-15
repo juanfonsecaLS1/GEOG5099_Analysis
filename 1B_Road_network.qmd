@@ -23,7 +23,7 @@ library(MinorRoadTraffic)
 
 ```{r osm_get}
 osm_raw <- oe_get("East Yorkshire with Hull",
-                 extra_tags = c("ref", "highway", "junction", "maxspeed"))
+                 extra_tags = c("ref", "highway", "junction", "maxspeed","oneway"))
 ```
 
 ## Clipping road network
@@ -40,7 +40,10 @@ buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
 bounds <- sf_counts |>
   make_convex_hull(dist = buffer_distance)
 
-osm_clean = extract_from_osm(osm_raw, bounds)
+osm_clean = extract_from_osm(osm_raw,
+                             bounds,
+                             col_names = c("osm_id","name","ref","highway",
+                                           "junction","maxspeed","geometry","oneway"))
 
 network = osm_clean$network
 junctions = osm_clean$junctions
@@ -60,7 +63,10 @@ network_fill = osm_fill_ref2(network)
 ## Saving data
 ```{r saving_network}
 try(file.remove("03_preprocessing_files/network.geoJSON"))
-try(st_write(network_fill2,"03_preprocessing_files/network.geoJSON"),silent = T)
+try(st_write(network_fill,"03_preprocessing_files/network.geoJSON"))
+
+try(file.remove("03_preprocessing_files/junctions.geoJSON"))
+try(st_write(junctions,"03_preprocessing_files/junctions.geoJSON"))
 ```
 ## Spatial join with counts
 
@@ -95,14 +101,14 @@ tm_shape(bounds)+
   tm_dots(col = "blue")
 ```
 
-
-It is assumed that the locations of the loops do not have major error, thus their are assigned to the nearest network link. A quick check of the bearing based on the direction is performed, although it was noticed that some of the descriptions are not accurate.
+It is assumed that the locations of the loops are correct and the uncertainty of the coordinates is very small, thus their are assigned to the nearest network link. A quick check of the bearing based on the direction is performed, although it was noticed that some of the descriptions are not accurate.
 
 ```{r aadf_assign}
 lines <- network_fill
 junctions <- junctions
 
 traffic <- sf_aadf
+
 
 
 major_ref = c("motorway",
@@ -113,23 +119,24 @@ major_ref = c("motorway",
               "trunk_link")
 
 
-lines$bearing <- stplanr::line_bearing(l = lines)
-
-lines$road_type <-
-  dplyr::if_else(lines$highway %in% major_ref, "major", "minor")
-
-
-# Transform to Britsh National Grid
-lines = sf::st_transform(lines, 27700)
-junctions = sf::st_transform(junctions, 27700)
-traffic = sf::st_transform(traffic, 27700)
-bounds = sf::st_transform(bounds, 27700)
-
-traffic$nearest_road <- st_nearest_feature(traffic, lines)
 
 
 
-traffic$bearing <- lines$bearing[traffic$nearest_road]
+graph <- dodgr::weight_streetnet(lines,
+                                 keep_cols = c("name","ref","highway","junction","maxspeed","oneway")
+                                 )
+
+
+
+graph_sf <- dodgr::dodgr_to_sf(graph) |> st_transform(27700)
+
+st_write(graph_sf,"03_preprocessing_files/graph_sf.geoJSON")
+
+traffic_buffer <- traffic |> st_buffer(20)
+
+road_intersects <- st_intersects(traffic_buffer,graph_sf)
+
+t_count <- 106
 
 dirs_tbl <-
   tibble(
@@ -147,20 +154,65 @@ dirs_tbl <-
                   45, -45, -135, 135)
   )
 
-tolerance <- 50
+b_tolerance <- 90
 
-traffic_check <- traffic |>
-  left_join(dirs_tbl, by = "dir_str") |>
-  mutate(
-    bearing_check_1 = abs(bearing - t_bearing),
-    bearing_check_2 = 180 - abs(bearing - t_bearing),
-    bearing_check = bearing_check_1 < tolerance | bearing_check_2 < tolerance)
+
+traffic$edge_id <- vapply(seq_len(nrow(traffic_buffer)),
+       function(t_count){
+  str_dir_bearing <- dirs_tbl$t_bearing[traffic_buffer$dir_str[t_count]==dirs_tbl$dir_str]
+  
+  sel_road_links = graph_sf[road_intersects[[t_count]],]
+  
+  if(nrow(sel_road_links)>0) {
+    sel_road_links$bearing = stplanr::line_bearing(l = sel_road_links |> st_transform(crs = 4326))
+    
+    sel_road_links$bearing_check = (str_dir_bearing - abs(sel_road_links$bearing))  < b_tolerance
+    
+    sel_road_links = sel_road_links[sel_road_links$bearing_check, ]
+    
+    t_edge = sel_road_links[st_nearest_feature(traffic[t_count, ], sel_road_links), ] |> st_drop_geometry()
+    
+    return(t_edge$edge_id)
+  } else{
+    return(NA_character_)
+  }
+  
+  },
+  character(1))
+
+
+edge_flow <- traffic |>
+  st_drop_geometry() |>
+  drop_na(edge_id) |>
+  summarise(across(starts_with("flow"),mean),.by = edge_id)
+
+graph_contr = dodgr::dodgr_contract_graph(graph)
+
+graph_sf_flows <- graph_sf |> left_join(edge_flow,by="edge_id")
+
+tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
+  tm_lines("grey",lwd = 1)+
+  tm_shape(graph_sf_flows |> drop_na(flow.2023))+
+  tm_lines("flow.2023",lwd = 1.5)+
+  tm_shape(traffic)+
+  tm_dots("blue")
+
+
+
+graph_sf_flows$road_type <-
+  dplyr::if_else(graph_sf_flows$highway %in% major_ref, "major", "minor")
+
+
+
+# Transform to Britsh National Grid
+junctions = sf::st_transform(junctions, 27700)
+bounds = sf::st_transform(bounds, 27700)
 
 ```
 
 
 ```{r map_bearing_check}
-
+tmap_mode("view")
 tm_basemap("OpenStreetMap")+
     tm_shape(lines)+
     tm_lines(col = "orange")+
