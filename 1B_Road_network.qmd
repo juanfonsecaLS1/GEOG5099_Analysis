@@ -130,8 +130,6 @@ graph <- dodgr::weight_streetnet(lines,
 
 graph_sf <- dodgr::dodgr_to_sf(graph) |> st_transform(27700)
 
-st_write(graph_sf,"03_preprocessing_files/graph_sf.geoJSON")
-
 traffic_buffer <- traffic |> st_buffer(20)
 
 road_intersects <- st_intersects(traffic_buffer,graph_sf)
@@ -211,15 +209,7 @@ bounds = sf::st_transform(bounds, 27700)
 ```
 
 
-```{r map_bearing_check}
-tmap_mode("view")
-tm_basemap("OpenStreetMap")+
-    tm_shape(lines)+
-    tm_lines(col = "orange")+
-    tm_shape(traffic_check)+
-    tm_dots(col = "bearing_check",popup.vars = TRUE)
-  
-```
+
 
 
 
