@@ -19,10 +19,12 @@ bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
 download_lsoa_2021 <- function(url = "https://github.com/juanfonsecaLS1/GEOG5099_Analysis/releases/download/v0/LSOA_Dec_2021_Boundaries_Generalised_Clipped_EW_BGC_2022_5605507071095448309.geojson",
                               bounds){
   
-dir.create(file.path(tempdir(),"lsoa"))
-utils::download.file(url, destfile = file.path(tempdir(),"lsoa","LSOA_2021.geojson"),
-                       mode = "wb")
-  res = sf::read_sf(file.path(tempdir(),"lsoa","LSOA_2021.geojson"))
+dir.create(file.path("02_raw_census","lsoa"),recursive = T,showWarnings = F)
+
+  if(!file.exists(file.path("02_raw_census","lsoa","LSOA_2021.geojson"))){
+  utils::download.file(url, destfile = file.path("02_raw_census","lsoa","LSOA_2021.geojson"),
+                       mode = "wb")}
+  res = sf::read_sf(file.path("02_raw_census","lsoa","LSOA_2021.geojson"))
   return(res)
 }
 
@@ -46,11 +48,15 @@ tm_basemap("OpenStreetMap")+
 ## Data
 ### Population
 ```{r census_population}
-dir.create(file.path(tempdir(),"census"))
+dir.create(file.path("02_raw_census","census"),recursive = T,showWarnings = F)
+if(!file.exists(file.path("02_raw_census",
+                              "census",
+                              "pop_2021.zip"))){
 download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts001.zip",
-              destfile = file.path(tempdir(),"census","pop_2021.zip"),
-                       mode = "wb")
-pop <- read_csv(unz(file.path(tempdir(),
+              destfile = file.path("02_raw_census","census","pop_2021.zip"),
+                       mode = "wb")}
+
+pop <- read_csv(unz(file.path("02_raw_census",
                               "census",
                               "pop_2021.zip"),
                     "census2021-ts001-lsoa.csv"),
@@ -68,11 +74,12 @@ pop <- read_csv(unz(file.path(tempdir(),
 
 ### Exmployment Status
 ```{r census_employment}
-download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
-              destfile = file.path(tempdir(),"census","employment_2021.zip"),
-                       mode = "wb")
+if(!file.exists(file.path("02_raw_census","census","employment_2021.zip"))){
+  download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
+              destfile = file.path("02_raw_census","census","employment_2021.zip"),
+                       mode = "wb")}
 
-employ <- read_csv(unz(file.path(tempdir(),
+employ <- read_csv(unz(file.path("02_raw_census",
                               "census",
                               "employment_2021.zip"),
                     "census2021-ts066-lsoa.csv")
@@ -121,10 +128,12 @@ col_types = cols(
 ### Car Availability
 
 ```{r census_caravail}
-download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
-              destfile = file.path(tempdir(),"census","car_avail_2021.zip"),
+if(!file.exists(file.path("02_raw_census","census","car_avail_2021.zip"))){
+  download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
+              destfile = file.path("02_raw_census","census","car_avail_2021.zip"),
                        mode = "wb")
-car_avail <- read_csv(unz(file.path(tempdir(),
+  }
+car_avail <- read_csv(unz(file.path("02_raw_census",
                               "census",
                               "car_avail_2021.zip"),
                     "census2021-ts045-lsoa.csv"),
@@ -143,11 +152,13 @@ car_avail <- read_csv(unz(file.path(tempdir(),
 ```
 ### Method to work (mode)
 ```{r census_commute_mode}
-download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
-              destfile = file.path(tempdir(),"census","comm_mode_2021.zip"),
+if(!file.exists(file.path("02_raw_census","census","comm_mode_2021.zip"))){
+  download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
+              destfile = file.path("02_raw_census","census","comm_mode_2021.zip"),
                        mode = "wb")
+  }
 comm_mode <- read_csv(
-  unz(file.path(tempdir(),
+  unz(file.path("02_raw_census",
                 "census",
                 "comm_mode_2021.zip"),
       "census2021-ts061-lsoa.csv",),
