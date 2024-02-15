@@ -48,8 +48,10 @@ po/*~
 # RStudio Connect folder
 rsconnect/
 
-# Folder with count data
+# Folder with count data and census data
 02_raw_data_counts/
+02_raw_census/
+
 
 # For quarto
 /.quarto/
