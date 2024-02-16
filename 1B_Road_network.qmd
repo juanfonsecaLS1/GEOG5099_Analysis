@@ -46,7 +46,6 @@ osm_clean = extract_from_osm(osm_raw,
                                            "junction","maxspeed","geometry","oneway"))
 
 network = osm_clean$network
-junctions = osm_clean$junctions
 rm(osm_clean, osm_raw)
 ```
 
@@ -59,14 +58,6 @@ st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
 The `ref` attribute is filled based on the neighbouring links. 
 ```{r attr_filling}
 network_fill = osm_fill_ref2(network)
-```
-## Saving data
-```{r saving_network}
-try(file.remove("03_preprocessing_files/network.geoJSON"))
-try(st_write(network_fill,"03_preprocessing_files/network.geoJSON"))
-
-try(file.remove("03_preprocessing_files/junctions.geoJSON"))
-try(st_write(junctions,"03_preprocessing_files/junctions.geoJSON"))
 ```
 ## Spatial join with counts
 
@@ -89,7 +80,6 @@ sf_aadf <- sf_counts |>
 ```
 
 A quick visualisation
-
 ```{r map_net_counts}
 tmap_mode("plot")
 tm_basemap("OpenStreetMap")+
@@ -101,15 +91,15 @@ tm_shape(bounds)+
   tm_dots(col = "blue")
 ```
 
-It is assumed that the locations of the loops are correct and the uncertainty of the coordinates is very small, thus their are assigned to the nearest network link. A quick check of the bearing based on the direction is performed, although it was noticed that some of the descriptions are not accurate.
+It is assumed that the locations of the loops are correct and the uncertainty of the coordinates is very small. Links within 20 metres from the count are considered and then filtered using the described direction, and the nearest feature/link with the correct bearing is selected. If two or more counts are assigned to the same road link/graph edge the mean 
+
+<!-- Include something to describe the bearing check -->
+
+Using a similar approach as in the `assign_aadt_major` of the `MinorRoadsTraffic` package, an alternative function is defined.
 
 ```{r aadf_assign}
 lines <- network_fill
-junctions <- junctions
-
 traffic <- sf_aadf
-
-
 
 major_ref = c("motorway",
               "motorway_link",
@@ -118,15 +108,9 @@ major_ref = c("motorway",
               "trunk",
               "trunk_link")
 
-
-
-
-
 graph <- dodgr::weight_streetnet(lines,
                                  keep_cols = c("name","ref","highway","junction","maxspeed","oneway")
                                  )
-
-
 
 graph_sf <- dodgr::dodgr_to_sf(graph) |> st_transform(27700)
 
@@ -178,7 +162,6 @@ traffic$edge_id <- vapply(seq_len(nrow(traffic_buffer)),
   },
   character(1))
 
-
 edge_flow <- traffic |>
   st_drop_geometry() |>
   drop_na(edge_id) |>
@@ -186,30 +169,99 @@ edge_flow <- traffic |>
 
 graph_contr = dodgr::dodgr_contract_graph(graph)
 
-graph_sf_flows <- graph_sf |> left_join(edge_flow,by="edge_id")
-
-tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
-  tm_lines("grey",lwd = 1)+
-  tm_shape(graph_sf_flows |> drop_na(flow.2023))+
-  tm_lines("flow.2023",lwd = 1.5)+
-  tm_shape(traffic)+
-  tm_dots("blue")
-
-
+graph_sf_flows <- graph_sf |>
+  left_join(edge_flow,by="edge_id")
 
 graph_sf_flows$road_type <-
-  dplyr::if_else(graph_sf_flows$highway %in% major_ref, "major", "minor")
-
-
-
-# Transform to Britsh National Grid
-junctions = sf::st_transform(junctions, 27700)
-bounds = sf::st_transform(bounds, 27700)
+  dplyr::if_else(graph_sf_flows$highway %in% major_ref,
+                 "major",
+                 "minor")
 
 ```
 
 
+The following map shows the road network and the flows that have been assigned
+```{r assign_map}
+tmap_mode("view")
+tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
+  tm_lines("grey",lwd = 1)+
+  tm_shape(traffic)+
+  tm_dots("blue",alpha=0.5)+
+  tm_shape(graph_sf_flows |> drop_na(flow.2023))+
+  tm_lines("flow.2023",lwd = 1.5)
+```
+
+Junctions are extracted from the contracted graph
+
+```{r jct_ext}
+junctions <- dodgr::dodgr_vertices(graph_contr) |>
+  st_as_sf(coords = c("x","y"),
+           crs = 4326)
+```
+
+Junctions will be classified as minor, major and minor-major depending on the adjacent links.
+
+```{r jct_classification}
+junction_class_to <- graph_sf_flows |>
+  st_drop_geometry() |>
+  summarise(count = n(),.by = c(to_id,road_type)) |>
+  pivot_wider(names_from = road_type,values_from = count)|> 
+  rename(id = to_id)
+
+junction_class_from <- graph_sf_flows |>
+  st_drop_geometry() |>
+  summarise(count = n(),.by = c(from_id,road_type)) |>
+  pivot_wider(names_from = road_type,values_from = count) |>
+  rename(id = from_id)
 
 
+junctions_classed <- junction_class_to |> 
+  full_join(junction_class_from,by = "id",suffix = c(".to",".from")) |> 
+  mutate(jtc_type = case_when(is.na(minor.to)&is.na(minor.from)~"major",
+                              is.na(major.to)&is.na(major.from)~"minor",
+                              (!is.na(minor.to)&!is.na(major.from))|
+                                (!is.na(minor.from)&!is.na(major.to))~"minmaj")) |> 
+  select(-starts_with("m"))
+rm(junction_class_from,junction_class_to)
+```
+
+Mean incoming approach flows  are calculated for all junctions, i.e. if a junction has 4 incoming roads/edges, an average of the 4 is calculated. Outgoing flows are not considered to avoid double-counting since the in and out flows should be the same.  
+
+```{r jct_flows}
+junctions_in_flows <- graph_sf_flows |>
+  st_drop_geometry() |>
+  summarise(across(starts_with("flow"),\(x) mean(x,na.rm = T)),.by = c(to_id))|> 
+  rename(id = to_id)
+```
+
+```{r jct_consolidate}
+junctions_flows <- junctions |> 
+  left_join(junctions_in_flows,by = "id") |> 
+  left_join(junctions_classed,by = "id")
+rm(junctions_classed,junctions_in_flows,junctions)
+```
+
+The following map shows the average flow in Minor-Major junctions.
+
+```{r minmaj_jct_plot}
+tmap_mode("plot")
+tm_shape(graph_sf_flows)+
+  tm_lines("#87CEFA",lwd = 1)+
+  tm_shape(junctions_flows |> filter(jtc_type == "minmaj"))+
+  tm_dots(col = "flow.2023",size = 0.2, title = "AADF 2023")
+```
+
+
+## Saving data
+```{r save_network_data}
+network_data <- list(network = graph_sf_flows,
+                     junctions = junctions_flows,
+                     graph = graph)
+write_rds(network_data,file = "03_preprocessing_files/network_data.rds")
+try(file.remove("03_preprocessing_files/raw_network.geoJSON"))
+st_write(network_fill,"03_preprocessing_files/raw_network.geoJSON")
+try(file.remove("03_preprocessing_files/sf_junctions.geoJSON"))
+st_write(junctions_flows,"03_preprocessing_files/sf_junctions.geoJSON")
+```
 
 
