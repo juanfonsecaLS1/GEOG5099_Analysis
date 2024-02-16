@@ -52,6 +52,9 @@ rsconnect/
 02_raw_data_counts/
 02_raw_census/
 
+# Folder with intermediate data
+03_preprocessing_files/
+
 
 # For quarto
 /.quarto/
