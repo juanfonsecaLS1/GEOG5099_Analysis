@@ -30,7 +30,9 @@ osm_raw <- oe_get("East Yorkshire with Hull",
 
 An alternative source can be the [OS Open Roads](https://osdatahub.os.uk/downloads/open/OpenRoads).
 
-## Clipping road network
+## Pre-Processing OSM
+
+### Clipping road network
 
 The study area bounds will be used to clip the road network.
 ```{r load_counts_results}
@@ -48,13 +50,15 @@ network = osm_clean$network
 rm(osm_clean, osm_raw)
 ```
 
-## Cleaning and simplifying
+### Filling missing values
 The `ref` attribute is filled based on the neighbouring links. 
 ```{r attr_filling}
 network_fill = osm_fill_ref2(network)
 ```
-## Spatial join with counts
 
+## Join with other datasets
+
+### Traffic counts
 ```{r load_aadf}
 aadf_data <- read_csv(
   "03_preprocessing_files/aadf_data.csv",
@@ -245,6 +249,53 @@ tm_shape(graph_sf_flows)+
   tm_dots(col = "flow.2023",size = 0.2, title = "AADF 2023")
 ```
 
+### LSOA data
+
+```{r}
+lsoa_data <- st_read("03_preprocessing_files/LSOA_data.geoJSON")
+```
+
+### Road density
+This is an improved version of the `road_density` function in the `MinorRoadTraffic` package
+```{r}
+zone_inter <- sf::st_intersects(lsoa_data, graph_sf_flows)
+
+lsoa_data$road_km <- pbapply::pbvapply(seq_along(zone_inter),
+                             function(zone) {
+                               t_zone <- lsoa_data[zone,]
+                               line <- graph_sf_flows[zone_inter[[zone]],]
+                               
+                               if (nrow(line) == 0) {
+                                 return(0)
+                               }
+                               
+                               line <- sf::st_intersection(t_zone, line)
+                               return(sum(as.numeric(sf::st_length(line))) / 1000)
+                             },
+                             FUN.VALUE = numeric(1))
+
+lsoa_data_density <-
+  lsoa_data |> mutate(area_km2 = as.numeric(st_area(geometry)) / 1e6,
+                      density = road_km / area_km2)
+```
+
+### Centrality
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 ## Saving data
 ```{r save_network_data}
@@ -257,5 +308,7 @@ st_write(network_fill,"03_preprocessing_files/raw_network.geoJSON")
 try(file.remove("03_preprocessing_files/sf_junctions.geoJSON"))
 st_write(junctions_flows,"03_preprocessing_files/sf_junctions.geoJSON")
 ```
+
+
 
 
