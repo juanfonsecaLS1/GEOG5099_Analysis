@@ -10,15 +10,16 @@ website:
     style: "docked"
     contents:
       - index.qmd
+      - section: "Estimation models"
+        contents:
+          - 0A_Causal_model.qmd
+          - 0B_Data_sources.qmd
+          - 0C_Estimator_selection.qmd
       - section: "Preprocessing"
         contents:
           - 1A_Count_data.qmd
           - 1B_Road_network.qmd
           - 1C_Census_data.qmd
-      - section: "Exploratory Analysis"
-      - section: "Estimation models"
-        contents:
-          - 2B_Causal_model.qmd
 format:
   html:
     toc: true

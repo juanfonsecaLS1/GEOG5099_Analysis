@@ -1,0 +1,16 @@
+---
+title: "Estimator Selection"
+author: "Juan Fonseca"
+---
+
+
+
+## Ordinary Least Squares (OLS)
+
+
+
+## Geographically Weighted Poisson Regression (GWPR)
+
+
+
+## Bayesian 

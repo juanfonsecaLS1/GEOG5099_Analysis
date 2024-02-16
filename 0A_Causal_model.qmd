@@ -1,0 +1,48 @@
+---
+title: "Causal Model"
+author: "Juan Fonseca"
+format: html
+---
+
+```{r, echo=FALSE,fig.dim=c(3,3)}
+library(dagitty)
+library(ggdag)
+
+dag_traffic <- dagitty('dag {
+bb="-3.565,-3.937,3.998,3.68"
+C [pos="-1.220,-1.837"]
+D [pos="-1.199,-1.082"]
+E [pos="-0.291,-1.997"]
+J [pos="-1.770,-0.847"]
+M [pos="-1.167,-0.124"]
+P [pos="0.152,-1.552"]
+T [pos="0.105,-0.069"]
+V [pos="0.676,-1.913"]
+C -> T
+D -> C
+D -> J
+D -> T
+E -> T
+J -> T
+M -> T
+P -> E
+P -> T
+P -> V
+V -> T
+}')
+
+ggdag(dag_traffic) + theme_dag()
+```
+
+Where:
+
+- $T$ is the traffic flow on a minor road,
+- $P$ is the population living along the minor road,
+- $E$ employees and working owners along the minor road,
+- $V$ the cars available along the minor road, 
+- $M$ the traffic flow of the nearest major road with observed traffic, 
+- $J$ the distance to the nearest minor-major road junction, 
+- $D$ the road density in the LSOA where the minor road is located, and 
+- $C$ is the standardised centrality of the minor road link.
+
+

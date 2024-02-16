@@ -21,10 +21,14 @@ library(MinorRoadTraffic)
 
 ## Downloading data
 
+For this analysis, OpenStreetMap will be used for the road network.
+
 ```{r osm_get}
 osm_raw <- oe_get("East Yorkshire with Hull",
                  extra_tags = c("ref", "highway", "junction", "maxspeed","oneway"))
 ```
+
+An alternative source can be the [OS Open Roads](https://osdatahub.os.uk/downloads/open/OpenRoads).
 
 ## Clipping road network
 
