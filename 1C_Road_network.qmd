@@ -2,6 +2,8 @@
 title: "Road Network"
 author: "Juan Fonseca"
 format: html
+execute:
+  cache: true
 ---
 ```{r libraries}
 library(tidyverse)
@@ -32,18 +34,12 @@ An alternative source can be the [OS Open Roads](https://osdatahub.os.uk/downloa
 
 ## Clipping road network
 
-The count data will be used to clip the road network.
-```{r sf_counts}
-sf_counts <- st_read("03_preprocessing_files/grouped_counts.geojson")
+The study area bounds will be used to clip the road network.
+```{r load_bounds}
+bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
 ```
 
-
 ```{r clipping}
-buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
-
-bounds <- sf_counts |>
-  make_convex_hull(dist = buffer_distance)
-
 osm_clean = extract_from_osm(osm_raw,
                              bounds,
                              col_names = c("osm_id","name","ref","highway",
@@ -51,11 +47,6 @@ osm_clean = extract_from_osm(osm_raw,
 
 network = osm_clean$network
 rm(osm_clean, osm_raw)
-```
-
-```{r saving_bounds,include=FALSE}
-try(file.remove("03_preprocessing_files/bounds.geoJSON"))
-st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
 ```
 
 ## Cleaning and simplifying

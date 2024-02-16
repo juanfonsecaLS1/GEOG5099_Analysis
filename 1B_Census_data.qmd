@@ -2,6 +2,8 @@
 title: "Census data"
 author: "Juan Fonseca"
 format: html
+execute:
+  cache: true
 ---
 
 ## LSOA Boundaries
@@ -13,9 +15,14 @@ library(tmap)
 library(MinorRoadTraffic)
 ```
 
-```{r lsoa_boundaries}
+Loading the bounds produced from the grouped counts
+```{r load_bounds}
 bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
+```
 
+
+```{r lsoa_boundaries}
+if(!file.exists("02_raw_census/LSOA_selected.geoJSON")){
 download_lsoa_2021 <- function(url = "https://github.com/juanfonsecaLS1/GEOG5099_Analysis/releases/download/v0/LSOA_Dec_2021_Boundaries_Generalised_Clipped_EW_BGC_2022_5605507071095448309.geojson",
                               bounds){
   
@@ -31,9 +38,14 @@ dir.create(file.path("02_raw_census","lsoa"),recursive = T,showWarnings = F)
 lsoa <- download_lsoa_2021()
 
 lsoa_fixed <- lsoa |> st_make_valid()
-lsoa_selected <- lsoa_fixed[bounds,] |> st_transform(4326)
+lsoa_selected <- lsoa_fixed[bounds,] 
+st_write(lsoa_selected,"02_raw_census/LSOA_selected.geoJSON")
+
 rm(lsoa,lsoa_fixed)
-gc()
+}else{
+  lsoa_selected <- st_read("02_raw_census/LSOA_selected.geoJSON")
+}
+
 ```
 
 ```{r map_lsoa}
@@ -45,8 +57,10 @@ tm_basemap("OpenStreetMap")+
               border.col = "blue")
 ```
 
-## Data
-### Population
+## Downloading Data
+The following code downloads the 2021 Census data. 
+
+### Population TS001
 ```{r census_population}
 dir.create(file.path("02_raw_census","census"),recursive = T,showWarnings = F)
 if(!file.exists(file.path("02_raw_census",
@@ -69,10 +83,11 @@ pop <- read_csv(unz(file.path("02_raw_census",
   `Residence type: Lives in a communal establishment; measures: Value` = col_double()
 )
 ) |> rename_with(.cols = starts_with("Residence"),
-                 ~ gsub("Residence type: ","",.x))
+                 ~ gsub("Residence type: ","",.x))|> 
+  tibble(.name_repair = "universal")
 ```
 
-### Exmployment Status
+### Exmployment Status TS066
 ```{r census_employment}
 if(!file.exists(file.path("02_raw_census","census","employment_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
@@ -121,12 +136,12 @@ col_types = cols(
   `Economic activity status: Economically inactive: Other` = col_double()
 )
 ) |> rename_with(.cols = starts_with("Economic"),
-                 ~ gsub("Economic activity status: ","",.x))
+                 ~ gsub("Economic activity status: ","",.x))|> 
+  tibble(.name_repair = "universal")
 ```
 
 
-### Car Availability
-
+### Car Availability TS045
 ```{r census_caravail}
 if(!file.exists(file.path("02_raw_census","census","car_avail_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
@@ -148,9 +163,11 @@ car_avail <- read_csv(unz(file.path("02_raw_census",
   `Number of cars or vans: 3 or more cars or vans in household` = col_double()
 )
 ) |> rename_with(.cols = starts_with("Number"),
-                 ~ gsub("Number of cars or vans: ","",.x))
+                 ~ gsub("Number of cars or vans: ","",.x))|> 
+  tibble(.name_repair = "universal")
 ```
-### Method to work (mode)
+
+### Method to work (mode) TS061
 ```{r census_commute_mode}
 if(!file.exists(file.path("02_raw_census","census","comm_mode_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
@@ -181,13 +198,115 @@ comm_mode <- read_csv(
   )
   ) |>
   rename_with(.cols = starts_with("Method"),
-              ~ gsub("Method of travel to workplace: ","",.x))
+              ~ gsub("Method of travel to workplace: ","",.x)) |> 
+  tibble(.name_repair = "universal")
 ```
-### Data from Carbon Calculation
 
+### Data from [Place-based Carbon Calculator](https://www.carbon.place/data/)
 ```{r carboncalc_data}
 pbcc <- download_pbcc() |>
   semi_join(lsoa_selected,by = c("LSOA11NM"="LSOA21NM"))
 ```
 
+## Pre-processing
+### Sub-setting the census data
+#### Population
+```{r}
+lsoa_pop <- pop |>
+  semi_join(lsoa_selected, by = c("geography.code"="LSOA21CD")) |>
+  select(geography.code,Total..measures..Value) |> 
+  rename(total_pop = Total..measures..Value)
+```
+#### Employment status
+```{r}
+lsoa_employ <- employ |>
+  semi_join(lsoa_selected, by = c("geography.code"="LSOA21CD")) |>
+  select(geography.code, Economically.active..excluding.full.time.students..In.employment) |> 
+  rename(total_employed = Economically.active..excluding.full.time.students..In.employment)
+```
+
+#### Car Availability
+```{r}
+lsoa_car_avail <- car_avail |>
+  semi_join(lsoa_selected, by = c("geography.code"="LSOA21CD")) |>
+  mutate(car_avail_perc = (Total..All.households-No.cars.or.vans.in.household)/Total..All.households) |> 
+  select(geography.code,car_avail_perc)
+```
+
+#### Methot to travel to work
+```{r}
+lsoa_comm_mode <- comm_mode |>
+  semi_join(lsoa_selected, by = c("geography.code"="LSOA21CD")) |> 
+  mutate(car_comm_perc = (Taxi+Driving.a.car.or.van+Passenger.in.a.car.or.van)/Total..All.usual.residents.aged.16.years.and.over.in.employment.the.week.before.the.census) |> 
+  select(geography.code,car_comm_perc)
+```
+#### Carbon Calculator
+```{r}
+lsoa_pbcc <- pbcc |> select(LSOA11,cars_percap_2018)
+```
+
+### Consolidating and saving Results
+```{r}
+LSOA_data <- lsoa_selected |> 
+  left_join(
+    lsoa_pop |> 
+  left_join(lsoa_employ,by="geography.code") |> 
+  left_join(lsoa_car_avail,by="geography.code")  |> 
+  left_join(lsoa_comm_mode,by="geography.code") |> 
+  left_join(lsoa_pbcc, by=c("geography.code"="LSOA11")),by = c("LSOA21CD"="geography.code"))
+```
+
+```{r}
+file.remove("03_preprocessing_files/LSOA_data.geoJSON")
+st_write(LSOA_data,"03_preprocessing_files/LSOA_data.geoJSON")
+```
+
+### Some visualisations of the data
+```{r map_population}
+tmap_mode("plot")
+tm_shape(LSOA_data)+
+  tm_polygons(col = "total_pop",
+              border.col = "white",
+              palette = "Blues",
+              title = "Total Population 2021")
+```
+
+```{r map_employ}
+tmap_mode("plot")
+tm_shape(LSOA_data)+
+  tm_polygons(col = "total_employed",
+              border.col = "white",
+              palette = "Greens",
+              title = "Total people Employed 2021")
+```
+
+```{r map_car_avail}
+tmap_mode("plot")
+tm_shape(LSOA_data)+
+  tm_polygons(col = "car_avail_perc",
+              border.col = "white",
+              palette = "Reds",
+              title = "Car available in %households")
+```
+
+
+```{r map_car_comm}
+tmap_mode("plot")
+tm_shape(LSOA_data)+
+  tm_polygons(col = "car_comm_perc",
+              border.col = "white",
+              palette = "YlGn",
+              title = "Car commuting split %")
+```
+
+
+```{r map_car_own}
+tmap_mode("plot")
+tm_basemap("Esri.WorldGrayCanvas")+
+tm_shape(LSOA_data)+
+  tm_polygons(col = "cars_percap_2018",
+              border.col = "white",
+              palette = c("yellow", "darkgreen"),
+              title = "Cars per Capita 2018")
+```
 

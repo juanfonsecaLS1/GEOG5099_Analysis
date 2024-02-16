@@ -2,6 +2,8 @@
 title: "Count Data"
 author: "Juan Fonseca"
 format: html
+execute:
+  cache: true
 ---
 
 ```{r}
@@ -462,13 +464,27 @@ sf_counts_selected <- sf_counts |>
             by = join_by(group_id,subgroup_id))
 ```
 
+#### Study area bounds
+
+```{r}
+buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
+
+bounds <- sf_counts |>
+  make_convex_hull(dist = buffer_distance)
+```
+
+
 ### Saving results
 
-The following code produces a `csv` file with the AADF of all sites, and a `geoJSON` file for the .
+The following code produces a `csv` file with the AADF of all sites, and `geoJSON` files for the grouped counts and the convex hull formed by them.
 
 ```{r count_data_saving}
 dir.create("03_preprocessing_files",showWarnings = F)
 write_csv(aadf_data,file = "03_preprocessing_files/aadf_data.csv",append = F)
+
 try(file.remove("03_preprocessing_files/grouped_counts.geojson"))
 st_write(sf_counts_selected,"03_preprocessing_files/grouped_counts.geojson",append = F)
+
+try(file.remove("03_preprocessing_files/bounds.geoJSON"))
+st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
 ```

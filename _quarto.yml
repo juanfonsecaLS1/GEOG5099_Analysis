@@ -18,8 +18,8 @@ website:
       - section: "Preprocessing"
         contents:
           - 1A_Count_data.qmd
-          - 1B_Road_network.qmd
-          - 1C_Census_data.qmd
+          - 1B_Census_data.qmd
+          - 1C_Road_network.qmd
 format:
   html:
     toc: true
