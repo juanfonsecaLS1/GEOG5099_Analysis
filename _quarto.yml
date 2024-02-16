@@ -6,6 +6,10 @@ project:
 website:
   title: "Traffic Estimation Using Open Data"
   search: false
+  navbar:
+    tools:
+      - icon: github
+        href: https://github.com/juanfonsecaLS1/GEOG5099_Analysis
   sidebar:
     style: "docked"
     contents:

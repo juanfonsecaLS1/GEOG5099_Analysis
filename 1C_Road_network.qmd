@@ -2,8 +2,6 @@
 title: "Road Network"
 author: "Juan Fonseca"
 format: html
-execute:
-  cache: true
 ---
 ```{r libraries}
 library(tidyverse)
@@ -35,7 +33,8 @@ An alternative source can be the [OS Open Roads](https://osdatahub.os.uk/downloa
 ## Clipping road network
 
 The study area bounds will be used to clip the road network.
-```{r load_bounds}
+```{r load_counts_results}
+sf_counts <- st_read("03_preprocessing_files/grouped_counts.geojson")
 bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
 ```
 

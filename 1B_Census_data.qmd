@@ -2,8 +2,6 @@
 title: "Census data"
 author: "Juan Fonseca"
 format: html
-execute:
-  cache: true
 ---
 
 ## LSOA Boundaries

@@ -2,8 +2,6 @@
 title: "Count Data"
 author: "Juan Fonseca"
 format: html
-execute:
-  cache: true
 ---
 
 ```{r}
@@ -220,6 +218,7 @@ downloaded_files_full <- list.files("02_raw_data_counts/",full.names = T)
 ```{r count_data_load}
 library(data.table)
 library(dtplyr)
+
 setDTthreads(0)
 
 raw_data <- rbindlist(lapply(downloaded_files_full,fread))
@@ -468,7 +467,7 @@ sf_counts_selected <- sf_counts |>
 
 ```{r}
 buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
-
+library(MinorRoadTraffic)
 bounds <- sf_counts |>
   make_convex_hull(dist = buffer_distance)
 ```
