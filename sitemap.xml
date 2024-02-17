@@ -2,22 +2,30 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/index.html</loc>
-    <lastmod>2024-01-30T16:32:39.184Z</lastmod>
+    <lastmod>2024-02-17T15:04:34.872Z</lastmod>
   </url>
   <url>
-    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/1C_Census_data.html</loc>
-    <lastmod>2024-02-15T19:11:09.119Z</lastmod>
+    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/1B_Census_data.html</loc>
+    <lastmod>2024-02-16T17:47:27.361Z</lastmod>
+  </url>
+  <url>
+    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/0C_Estimator_selection.html</loc>
+    <lastmod>2024-02-16T14:46:56.371Z</lastmod>
+  </url>
+  <url>
+    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/0A_Causal_model.html</loc>
+    <lastmod>2024-02-16T15:06:16.811Z</lastmod>
+  </url>
+  <url>
+    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/0B_Data_sources.html</loc>
+    <lastmod>2024-02-16T14:47:44.819Z</lastmod>
   </url>
   <url>
     <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/1A_Count_data.html</loc>
-    <lastmod>2024-02-05T10:58:51.606Z</lastmod>
+    <lastmod>2024-02-16T17:52:24.923Z</lastmod>
   </url>
   <url>
-    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/1B_Road_network.html</loc>
-    <lastmod>2024-02-15T18:55:46.112Z</lastmod>
-  </url>
-  <url>
-    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/2B_Causal_model.html</loc>
-    <lastmod>2024-02-05T12:11:20.891Z</lastmod>
+    <loc>https://juanfonsecaLS1.github.io/GEOG5099_Analysis/1C_Road_network.html</loc>
+    <lastmod>2024-02-17T15:00:44.052Z</lastmod>
   </url>
 </urlset>

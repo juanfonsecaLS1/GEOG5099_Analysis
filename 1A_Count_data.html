@@ -122,6 +122,23 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div class="pt-lg-2 mt-2 text-left sidebar-header">
     <div class="sidebar-title mb-0 py-0">
       <a href="./">Traffic Estimation Using Open Data</a> 
+        <div class="sidebar-tools-main">
+    <div class="dropdown">
+      <a href="" title="" id="quarto-navigation-tool-dropdown-0" class="quarto-navigation-tool dropdown-toggle px-1" data-bs-toggle="dropdown" aria-expanded="false" aria-label=""><i class="bi bi-github"></i></a>
+      <ul class="dropdown-menu" aria-labelledby="quarto-navigation-tool-dropdown-0">
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://github.com/juanfonsecaLS1/GEOG5099_Analysis">
+            Source Code
+            </a>
+          </li>
+          <li>
+            <a class="dropdown-item sidebar-tools-main-item" href="https://github.com/juanfonsecaLS1/GEOG5099_Analysis/issues/new/choose">
+            Report an Issue
+            </a>
+          </li>
+      </ul>
+    </div>
+</div>
     </div>
       </div>
     <div class="sidebar-menu-container"> 
@@ -129,18 +146,48 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
         <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./index.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Home</span></a>
+ <span class="menu-text">Overview</span></a>
   </div>
 </li>
         <li class="sidebar-item sidebar-item-section">
       <div class="sidebar-item-container"> 
             <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true">
- <span class="menu-text">Preprocessing</span></a>
+ <span class="menu-text">Estimation models</span></a>
           <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-1" aria-expanded="true" aria-label="Toggle section">
             <i class="bi bi-chevron-right ms-2"></i>
           </a> 
       </div>
       <ul id="quarto-sidebar-section-1" class="collapse list-unstyled sidebar-section depth1 show">  
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./0A_Causal_model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Causal Model</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./0B_Data_sources.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Data Sources</span></a>
+  </div>
+</li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./0C_Estimator_selection.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Estimator Selection</span></a>
+  </div>
+</li>
+      </ul>
+  </li>
+        <li class="px-0"><hr class="sidebar-divider hi "></li>
+        <li class="sidebar-item sidebar-item-section">
+      <div class="sidebar-item-container"> 
+            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true">
+ <span class="menu-text">Preprocessing</span></a>
+          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-2" aria-expanded="true" aria-label="Toggle section">
+            <i class="bi bi-chevron-right ms-2"></i>
+          </a> 
+      </div>
+      <ul id="quarto-sidebar-section-2" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
   <a href="./1A_Count_data.html" class="sidebar-item-text sidebar-link active">
@@ -149,38 +196,22 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </li>
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./1B_Road_network.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Road Network</span></a>
-  </div>
-</li>
-          <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./1C_Census_data.html" class="sidebar-item-text sidebar-link">
+  <a href="./1B_Census_data.html" class="sidebar-item-text sidebar-link">
  <span class="menu-text">Census data</span></a>
   </div>
 </li>
-      </ul>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <span class="sidebar-item-text sidebar-link text-start">
- <span class="menu-text">Exploratory Analysis</span></span>
-  </li>
-        <li class="sidebar-item sidebar-item-section">
-      <div class="sidebar-item-container"> 
-            <a class="sidebar-item-text sidebar-link text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true">
- <span class="menu-text">Estimation models</span></a>
-          <a class="sidebar-item-toggle text-start" data-bs-toggle="collapse" data-bs-target="#quarto-sidebar-section-3" aria-expanded="true" aria-label="Toggle section">
-            <i class="bi bi-chevron-right ms-2"></i>
-          </a> 
-      </div>
-      <ul id="quarto-sidebar-section-3" class="collapse list-unstyled sidebar-section depth1 show">  
           <li class="sidebar-item">
   <div class="sidebar-item-container"> 
-  <a href="./2B_Causal_model.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text">Causal Model</span></a>
+  <a href="./1C_Road_network.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Road Network</span></a>
   </div>
 </li>
       </ul>
+  </li>
+        <li class="px-0"><hr class="sidebar-divider hi "></li>
+        <li class="sidebar-item sidebar-item-section">
+      <span class="sidebar-item-text sidebar-link text-start">
+ <span class="menu-text">Model Fitting</span></span>
   </li>
     </ul>
     </div>
@@ -375,8 +406,8 @@ first 10 elements:
 <span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>          <span class="at">alpha =</span> <span class="fl">0.7</span>,</span>
 <span id="cb19-7"><a href="#cb19-7" aria-hidden="true" tabindex="-1"></a>          <span class="at">group =</span> <span class="st">"Selected sites"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
-<div class="leaflet html-widget html-fill-item" id="htmlwidget-d163910c3982f644a058" style="width:100%;height:464px;"></div>
-<script type="application/json" data-for="htmlwidget-d163910c3982f644a058">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"createMapPane","args":["tmap401",401]},{"method":"addProviderTiles","args":["OpenStreetMap",null,"OpenStreetMap",{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"pane":"tilePane"}]},{"method":"addCircleMarkers","args":[[53.76534299724005,53.76305099723795,53.76493999723978,53.76411799723901,53.76357299723847,53.76338799723833],[-0.3831459864009295,-0.3814089864011341,-0.3846149864019136,-0.3832819864016079,-0.3823889864013998,-0.3829769864018061],[28.2842712474619,28.2842712474619,28.2842712474619,28.2842712474619,28.2842712474619,28.2842712474619],["X9602068","X9602069","X9602071","X9601820","X9601821","X9601822"],"Selected sites",{"interactive":true,"className":"","pane":"tmap401","stroke":true,"color":"#666666","weight":1,"opacity":0.5,"fill":true,"fillColor":["#006400","#006400","#006400","#006400","#006400","#006400"],"fillOpacity":[0.6980392156862745,0.6980392156862745,0.6980392156862745,0.6980392156862745,0.6980392156862745,0.6980392156862745]},null,null,["<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9602068<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9602068<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>c68e3708-5999-4ac2-83b1-a3770ab6046a<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45131C<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING SOUTHBOUND NORTH TO SOUTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/BajAufUV5uL2HEXZ6<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9602069<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9602069<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>47db2e0f-e78c-411e-bc7d-29cfa1686105<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45131D<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING WESBOUND EAST TO WEST<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/5h7e5V7t81XVHTfg6<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9602071<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9602071<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>541877f3-bc16-4941-b4dc-0c9366fe680d<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45144E<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING EASTBOUND NORTH WEST TO EAST<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/kaxNoTnfjaAbBTNv7<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9601820<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9601820<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>e93ff87f-5acd-4d2a-85ea-45972a09f70f<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45211A<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING EAST INTENDING TO TURN SOUTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/deN7hKHGH6FRmkTGA<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9601821<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9601821<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>3bc63f7b-2482-465c-a573-d9ad46198d6f<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45211D<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLLING EAST TO WEST TO TURN NORTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/zjEQRZkQ8QmRe29t9<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9601822<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9601822<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>61d4b1bf-b663-4346-8270-b1378ac0abab<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45211N<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING SOUTHBOUND NORTH TO SOUTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/FWSaZQdPWxuiQCmRA<\/nobr><\/td><\/tr><\/table><\/div>"],null,["9602068","9602069","9602071","9601820","9601821","9601822"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[[],"Selected sites",{"collapsed":true,"autoZIndex":true,"position":"topleft"}]}],"limits":{"lat":[53.76305099723795,53.76534299724005],"lng":[-0.3846149864019136,-0.3814089864011341]},"fitBounds":[53.76305099723795,-0.3846149864019136,53.76534299724005,-0.3814089864011341,[]]},"evals":[],"jsHooks":[]}</script>
+<div class="leaflet html-widget html-fill-item" id="htmlwidget-00282b05f97d998e2617" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-00282b05f97d998e2617">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"createMapPane","args":["tmap401",401]},{"method":"addProviderTiles","args":["OpenStreetMap",null,"OpenStreetMap",{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"pane":"tilePane"}]},{"method":"addCircleMarkers","args":[[53.76534299724005,53.76305099723795,53.76493999723978,53.76411799723901,53.76357299723847,53.76338799723833],[-0.3831459864009295,-0.3814089864011341,-0.3846149864019136,-0.3832819864016079,-0.3823889864013998,-0.3829769864018061],[28.2842712474619,28.2842712474619,28.2842712474619,28.2842712474619,28.2842712474619,28.2842712474619],["X9602068","X9602069","X9602071","X9601820","X9601821","X9601822"],"Selected sites",{"interactive":true,"className":"","pane":"tmap401","stroke":true,"color":"#666666","weight":1,"opacity":0.5,"fill":true,"fillColor":["#006400","#006400","#006400","#006400","#006400","#006400"],"fillOpacity":[0.6980392156862745,0.6980392156862745,0.6980392156862745,0.6980392156862745,0.6980392156862745,0.6980392156862745]},null,null,["<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9602068<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9602068<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>c68e3708-5999-4ac2-83b1-a3770ab6046a<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45131C<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING SOUTHBOUND NORTH TO SOUTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/BajAufUV5uL2HEXZ6<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9602069<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9602069<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>47db2e0f-e78c-411e-bc7d-29cfa1686105<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45131D<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING WESBOUND EAST TO WEST<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/5h7e5V7t81XVHTfg6<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9602071<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9602071<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>541877f3-bc16-4941-b4dc-0c9366fe680d<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45144E<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING EASTBOUND NORTH WEST TO EAST<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/kaxNoTnfjaAbBTNv7<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9601820<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9601820<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>e93ff87f-5acd-4d2a-85ea-45972a09f70f<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45211A<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING EAST INTENDING TO TURN SOUTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/deN7hKHGH6FRmkTGA<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9601821<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9601821<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>3bc63f7b-2482-465c-a573-d9ad46198d6f<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45211D<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLLING EAST TO WEST TO TURN NORTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/zjEQRZkQ8QmRe29t9<\/nobr><\/td><\/tr><\/table><\/div>","<style> div.leaflet-popup-content {width:auto !important;overflow-y:auto; overflow-x:hidden;}<\/style><div style=\"max-height:25em;padding-right:0px;\"><table>\n\t\t\t   <thead><tr><th colspan=\"2\"><b>9601822<\/b><\/th><\/thead><\/tr><tr><td style=\"color: #888888;\"><nobr>id<\/nobr><\/td><td align=\"right\"><nobr>9601822<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>resource_id<\/nobr><\/td><td align=\"right\"><nobr>61d4b1bf-b663-4346-8270-b1378ac0abab<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>package_id<\/nobr><\/td><td align=\"right\"><nobr>30fd3969-556d-4eae-ae4c-f3f9d2cfa9e3<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>name<\/nobr><\/td><td align=\"right\"><nobr>N45211N<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>desc<\/nobr><\/td><td align=\"right\"><nobr>TSI047 COUNTY ROAD / BRICKNALL AVE<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>direction<\/nobr><\/td><td align=\"right\"><nobr>TRAVELLING SOUTHBOUND NORTH TO SOUTH<\/nobr><\/td><\/tr><tr><td style=\"color: #888888;\"><nobr>url<\/nobr><\/td><td align=\"right\"><nobr>https://goo.gl/maps/FWSaZQdPWxuiQCmRA<\/nobr><\/td><\/tr><\/table><\/div>"],null,["9602068","9602069","9602071","9601820","9601821","9601822"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[[],"Selected sites",{"collapsed":true,"autoZIndex":true,"position":"topleft"}]}],"limits":{"lat":[53.76305099723795,53.76534299724005],"lng":[-0.3846149864019136,-0.3814089864011341]},"fitBounds":[53.76305099723795,-0.3846149864019136,53.76534299724005,-0.3814089864011341,[]]},"evals":[],"jsHooks":[]}</script>
 </div>
 </div>
 <p>Also, the direction of the different counts, in some cases, refer to the specific lane where the sensors are installed. Therefore, it is useful to extract the flow direction from description.</p>
@@ -506,9 +537,10 @@ Attaching package: 'data.table'</code></pre>
     transpose</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dtplyr)</span>
-<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a><span class="fu">setDTthreads</span>(<span class="dv">0</span>)</span>
-<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">rbindlist</span>(<span class="fu">lapply</span>(downloaded_files_full,fread))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a><span class="fu">setDTthreads</span>(<span class="dv">0</span>)</span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>raw_data <span class="ot">&lt;-</span> <span class="fu">rbindlist</span>(<span class="fu">lapply</span>(downloaded_files_full,fread))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning in FUN(X[[i]], ...): Discarded single-line footer: &lt;&lt;3225&gt;&gt;</code></pre>
 </div>
@@ -818,35 +850,42 @@ Attaching package: 'data.table'</code></pre>
 <span id="cb68-3"><a href="#cb68-3" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">join_by</span>(group_id,subgroup_id))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
+<section id="study-area-bounds" class="level4">
+<h4 class="anchored" data-anchor-id="study-area-bounds">Study area bounds</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a>buffer_distance <span class="ot">=</span> <span class="fu">max</span>(<span class="fu">st_distance</span>(sf_counts,sf_counts))<span class="sc">*</span><span class="fl">0.15</span></span>
+<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(MinorRoadTraffic)</span>
+<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a>bounds <span class="ot">&lt;-</span> sf_counts <span class="sc">|&gt;</span></span>
+<span id="cb69-4"><a href="#cb69-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">make_convex_hull</span>(<span class="at">dist =</span> buffer_distance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
 </section>
 <section id="saving-results" class="level3">
 <h3 class="anchored" data-anchor-id="saving-results">Saving results</h3>
-<p>The following code produces a <code>csv</code> file with the AADF of all sites, and a <code>geoJSON</code> file for the .</p>
+<p>The following code produces a <code>csv</code> file with the AADF of all sites, and <code>geoJSON</code> files for the grouped counts and the convex hull formed by them.</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb69"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb69-1"><a href="#cb69-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"03_preprocessing_files"</span>,<span class="at">showWarnings =</span> F)</span>
-<span id="cb69-2"><a href="#cb69-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(aadf_data,<span class="at">file =</span> <span class="st">"03_preprocessing_files/aadf_data.csv"</span>,<span class="at">append =</span> F)</span>
-<span id="cb69-3"><a href="#cb69-3" aria-hidden="true" tabindex="-1"></a><span class="fu">try</span>(<span class="fu">file.remove</span>(<span class="st">"03_preprocessing_files/grouped_counts.geojson"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in file.remove("03_preprocessing_files/grouped_counts.geojson"): cannot
-remove file '03_preprocessing_files/grouped_counts.geojson', reason 'Permission
-denied'</code></pre>
-</div>
+<div class="sourceCode cell-code" id="cb70"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb70-1"><a href="#cb70-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dir.create</span>(<span class="st">"03_preprocessing_files"</span>,<span class="at">showWarnings =</span> F)</span>
+<span id="cb70-2"><a href="#cb70-2" aria-hidden="true" tabindex="-1"></a><span class="fu">write_csv</span>(aadf_data,<span class="at">file =</span> <span class="st">"03_preprocessing_files/aadf_data.csv"</span>,<span class="at">append =</span> F)</span>
+<span id="cb70-3"><a href="#cb70-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb70-4"><a href="#cb70-4" aria-hidden="true" tabindex="-1"></a><span class="fu">try</span>(<span class="fu">file.remove</span>(<span class="st">"03_preprocessing_files/grouped_counts.geojson"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] FALSE</code></pre>
+<pre><code>[1] TRUE</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb72"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb72-1"><a href="#cb72-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_write</span>(sf_counts_selected,<span class="st">"03_preprocessing_files/grouped_counts.geojson"</span>,<span class="at">append =</span> F)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Warning in CPL_write_ogr(obj, dsn, layer, driver,
-as.character(dataset_options), : GDAL Error 6: DeleteLayer() not supported by
-this dataset.</code></pre>
-</div>
 <div class="cell-output cell-output-stdout">
-<pre><code>Deleting layer not supported by driver `GeoJSON'
-Deleting layer `grouped_counts' failed
-Writing layer `grouped_counts' to data source 
+<pre><code>Writing layer `grouped_counts' to data source 
   `03_preprocessing_files/grouped_counts.geojson' using driver `GeoJSON'
-Updating existing layer grouped_counts
 Writing 188 features with 4 fields and geometry type Point.</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb74"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb74-1"><a href="#cb74-1" aria-hidden="true" tabindex="-1"></a><span class="fu">try</span>(<span class="fu">file.remove</span>(<span class="st">"03_preprocessing_files/bounds.geoJSON"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] TRUE</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb76"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="fu">st_write</span>(bounds,<span class="st">"03_preprocessing_files/bounds.geoJSON"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Writing layer `bounds' to data source 
+  `03_preprocessing_files/bounds.geoJSON' using driver `GeoJSON'
+Writing 1 features with 0 fields and geometry type Polygon.</code></pre>
 </div>
 </div>
 
