@@ -1,16 +1,20 @@
 project:
   type: website
+  output-dir: docs
   render:
     - "*.qmd"
-
 website:
   title: "Traffic Estimation Using Open Data"
   search: false
-  navbar:
+  sidebar:
+    background: "secondary"
     tools:
       - icon: github
-        href: https://github.com/juanfonsecaLS1/GEOG5099_Analysis
-  sidebar:
+        menu:
+          - text: Source Code
+            url:  https://github.com/juanfonsecaLS1/GEOG5099_Analysis
+          - text: Report an Issue
+            url:  https://github.com/juanfonsecaLS1/GEOG5099_Analysis/issues/new/choose
     style: "docked"
     contents:
       - index.qmd
@@ -19,11 +23,14 @@ website:
           - 0A_Causal_model.qmd
           - 0B_Data_sources.qmd
           - 0C_Estimator_selection.qmd
+      - text: "---"
       - section: "Preprocessing"
         contents:
           - 1A_Count_data.qmd
           - 1B_Census_data.qmd
           - 1C_Road_network.qmd
+      - text: "---"
+      - section: "Model Fitting"
 format:
   html:
     toc: true

@@ -89,16 +89,17 @@ tm_shape(bounds)+
   tm_dots(col = "blue")
 ```
 
-It is assumed that the locations of the loops are correct and the uncertainty of the coordinates is very small. Links within 20 metres from the count are considered and then filtered using the described direction, and the nearest feature/link with the correct bearing is selected. If two or more counts are assigned to the same road link/graph edge the mean 
+It is assumed that the locations of the loops are correct and the uncertainty of the coordinates is very small. 
 
 <!-- Include something to describe the bearing check -->
 
-Using a similar approach as in the `assign_aadt_major` of the `MinorRoadsTraffic` package, an alternative function is defined.
+The `assign_aadt_major` of the `MinorRoadsTraffic` package uses voronoi diagrams to assign the traffic flows to the major roads of the network. The assignment will be different for this analysis for the following reasons:
 
+- The hull dataset has unidirectional traffic counts, as opposed to the bi-directional counts of the dataset by DfT . 
+- Traffic counts represent the flow in a specific section of the road links, other sections before and after adjacent junctions might be different. 
+
+A graph is created using the `dodgr` package
 ```{r aadf_assign}
-lines <- network_fill
-traffic <- sf_aadf
-
 major_ref = c("motorway",
               "motorway_link",
               "primary",
@@ -106,17 +107,37 @@ major_ref = c("motorway",
               "trunk",
               "trunk_link")
 
-graph <- dodgr::weight_streetnet(lines,
-                                 keep_cols = c("name","ref","highway","junction","maxspeed","oneway")
+graph <- dodgr::weight_streetnet(network_fill,
+                                 keep_cols = c("name","ref","highway","junction","maxspeed","oneway"),
+                                 wt_profile = "motorcar"
                                  )
 
-graph_sf <- dodgr::dodgr_to_sf(graph) |> st_transform(27700)
 
-traffic_buffer <- traffic |> st_buffer(20)
+```
+
+As the network has been clipped, it is possible to find some disconnected parts from the main network, these smaller component will be discarded. 
+
+```{r}
+main_component <- tibble(component = graph$component) |> 
+  count(component) |>
+  filter(n == max(n)) |>
+  pull(component)
+
+graph_clean <- graph[graph$component %in% main_component,]
+```
+
+
+An `sf` object is produced from the clean network
+```{r}
+graph_sf <- dodgr::dodgr_to_sf(graph_clean) |> st_transform(27700)
+```
+
+
+Links within 20 metres from the count are considered and then filtered using the  stated direction; then the nearest feature/link with the correct bearing is selected. If two or more counts are assigned to the same road link/graph, the mean flow is calculated. 
+```{r}
+traffic_buffer <- sf_aadf |> st_buffer(20)
 
 road_intersects <- st_intersects(traffic_buffer,graph_sf)
-
-t_count <- 106
 
 dirs_tbl <-
   tibble(
@@ -134,23 +155,26 @@ dirs_tbl <-
                   45, -45, -135, 135)
   )
 
+#Bearing tolerance
 b_tolerance <- 90
 
 
-traffic$edge_id <- vapply(seq_len(nrow(traffic_buffer)),
+sf_aadf$edge_id <- vapply(seq_len(nrow(traffic_buffer)),
        function(t_count){
   str_dir_bearing <- dirs_tbl$t_bearing[traffic_buffer$dir_str[t_count]==dirs_tbl$dir_str]
   
   sel_road_links = graph_sf[road_intersects[[t_count]],]
   
   if(nrow(sel_road_links)>0) {
-    sel_road_links$bearing = stplanr::line_bearing(l = sel_road_links |> st_transform(crs = 4326))
+    sel_road_links$bearing = stplanr::line_bearing(l = sel_road_links |>
+                                                     st_transform(crs = 4326))
     
     sel_road_links$bearing_check = (str_dir_bearing - abs(sel_road_links$bearing))  < b_tolerance
     
     sel_road_links = sel_road_links[sel_road_links$bearing_check, ]
     
-    t_edge = sel_road_links[st_nearest_feature(traffic[t_count, ], sel_road_links), ] |> st_drop_geometry()
+    t_edge = sel_road_links[st_nearest_feature(sf_aadf[t_count, ], sel_road_links), ] |>
+      st_drop_geometry()
     
     return(t_edge$edge_id)
   } else{
@@ -160,12 +184,16 @@ traffic$edge_id <- vapply(seq_len(nrow(traffic_buffer)),
   },
   character(1))
 
-edge_flow <- traffic |>
+edge_flow <- sf_aadf |>
   st_drop_geometry() |>
   drop_na(edge_id) |>
   summarise(across(starts_with("flow"),mean),.by = edge_id)
+```
 
-graph_contr = dodgr::dodgr_contract_graph(graph)
+A final version of the `sf` object of the network with the known flows is produced
+
+```{r}
+graph_contr = dodgr::dodgr_contract_graph(graph_clean)
 
 graph_sf_flows <- graph_sf |>
   left_join(edge_flow,by="edge_id")
@@ -174,22 +202,23 @@ graph_sf_flows$road_type <-
   dplyr::if_else(graph_sf_flows$highway %in% major_ref,
                  "major",
                  "minor")
-
 ```
 
 
 The following map shows the road network and the flows that have been assigned
 ```{r assign_map}
-tmap_mode("view")
+tmap_mode("plot")
 tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
   tm_lines("grey",lwd = 1)+
-  tm_shape(traffic)+
+  tm_shape(sf_aadf)+
   tm_dots("blue",alpha=0.5)+
   tm_shape(graph_sf_flows |> drop_na(flow.2023))+
   tm_lines("flow.2023",lwd = 1.5)
 ```
 
-Junctions are extracted from the contracted graph
+#### Junctions
+
+Junctions are extracted from the contracted graph to avoid redundant nodes
 
 ```{r jct_ext}
 junctions <- dodgr::dodgr_vertices(graph_contr) |>
@@ -215,7 +244,7 @@ junction_class_from <- graph_sf_flows |>
 
 junctions_classed <- junction_class_to |> 
   full_join(junction_class_from,by = "id",suffix = c(".to",".from")) |> 
-  mutate(jtc_type = case_when(is.na(minor.to)&is.na(minor.from)~"major",
+  mutate(jct_type = case_when(is.na(minor.to)&is.na(minor.from)~"major",
                               is.na(major.to)&is.na(major.from)~"minor",
                               (!is.na(minor.to)&!is.na(major.from))|
                                 (!is.na(minor.from)&!is.na(major.to))~"minmaj")) |> 
@@ -245,19 +274,28 @@ The following map shows the average flow in Minor-Major junctions.
 tmap_mode("plot")
 tm_shape(graph_sf_flows)+
   tm_lines("#87CEFA",lwd = 1)+
-  tm_shape(junctions_flows |> filter(jtc_type == "minmaj"))+
+  tm_shape(junctions_flows |> filter(jct_type == "minmaj"))+
   tm_dots(col = "flow.2023",size = 0.2, title = "AADF 2023")
 ```
 
 ### LSOA data
 
-```{r}
+```{r load_lsoa_data}
 lsoa_data <- st_read("03_preprocessing_files/LSOA_data.geoJSON")
 ```
 
+```{r lsoa_to_roads}
+edge_lsoa <- graph_sf_flows |>
+  select(edge_id) |>
+  st_join(lsoa_data |> select(LSOA21CD),
+          largest = T) |>
+  st_drop_geometry()
+```
+
+## Network metrics
 ### Road density
 This is an improved version of the `road_density` function in the `MinorRoadTraffic` package
-```{r}
+```{r road_density, warning=FALSE}
 zone_inter <- sf::st_intersects(lsoa_data, graph_sf_flows)
 
 lsoa_data$road_km <- pbapply::pbvapply(seq_along(zone_inter),
@@ -276,29 +314,128 @@ lsoa_data$road_km <- pbapply::pbvapply(seq_along(zone_inter),
 
 lsoa_data_density <-
   lsoa_data |> mutate(area_km2 = as.numeric(st_area(geometry)) / 1e6,
-                      density = road_km / area_km2)
+                      road_density = road_km / area_km2)
 ```
 
+A map of the road density in $km/km^2$: 
+
+```{r map_road_density}
+tm_shape(lsoa_data_density)+
+  tm_polygons(col = "road_density",
+              title = "road km/sq.km",
+              palette = "Greens",
+              border.col = "grey")
+  
+```
+
+
+### Junction density
+Similarly, the junction is calculated with the following code:
+```{r jct_dens}
+lsoa_junctions <- sf::st_intersects(lsoa_data,
+                                    junctions_flows |> st_transform(27700))
+
+lsoa_data_density$jct_counts <- pbapply::pbvapply(lsoa_junctions,length,integer(1))
+
+lsoa_data_density2 <-
+  lsoa_data_density |> mutate(area_km2 = as.numeric(st_area(geometry)) / 1e6,
+                      jct_density = jct_counts / area_km2)
+```
+
+A map with the junction density
+```{r map_jct_dens}
+tm_shape(lsoa_data_density2)+
+  tm_polygons(col = "jct_density",
+              title = "Junctions/sq.km",
+              palette = c("white","blue","darkblue"),
+              border.col = "grey")
+```
+
+
 ### Centrality
+Betweenness centrality is calculated using the contracted graph and `dodgr`
+```{r centrality_calc}
+graph_centr <- graph_contr |> 
+  dodgr_deduplicate_graph() |> 
+  dodgr_centrality(contract = T)
+```
+
+And joined with the `sf` object of the network. 
+```{r centrality_to_graph}
+tbl_centrality <- tibble(edge_id = graph_centr$edge_id,
+       centrality = graph_centr$centrality)
+
+graph_sf_centrality <- graph_sf_flows |>
+  left_join(tbl_centrality,by = join_by(edge_id))
+```
+
+A map to explore the centrality results
+```{r map_centrality}
+tmap_mode("plot")
+tm_shape(graph_sf_centrality)+
+  tm_lines(col = "centrality",palette = "viridis",lwd = 1,style = "fisher")
+```
 
 
+### Distance from minor-major junctions
+
+First the mid-point of all lines are extracted 
+```{r midpoint_ext}
+midpoints <- dodgr::dodgr_to_sf(graph_clean) |>
+  st_drop_geometry() |>
+  select(edge_id) |> 
+  bind_cols(
+    dodgr::dodgr_to_sf(graph_clean) |> 
+  st_coordinates() |> 
+  data.frame() |> 
+  tibble() |> 
+  filter(row_number()==ceiling(n()/2),.by =L1) |>
+  select(-L1)) |> 
+  # Extracting ids from uncontracted graph
+  left_join(graph_clean |> dodgr_vertices(),
+            by = c("X"="x","Y"="y"))
+```
+
+Junctions with known flows are sub-set and then distances from all mid-points to these junctions are calculated.
+
+```{r dist_calc}
+id_jct_flows <- junctions_flows |> 
+  filter(!is.na(flow.2023))
+
+times_matrix_flows <- dodgr_times(graph_clean,
+                                  from = id_jct_flows$id,
+                                  to = midpoints$id,
+                                  shortest = F)
+```
+
+Using the times matrix, we extract the `id` of the nearest junction with known flows 
+
+```{r id_nearest_jct}
+fastest_all <- tibble(
+  id = 
+    apply(times_matrix_flows, 2,
+          \(x) {id_jct_flows$id[match(min(x), x)]}
+    ),
+  dist =
+    apply(times_matrix_flows, 2,\(x) min(x,na.rm = TRUE)
+      )
+  )
+```
 
 
+```{r dist_from_jct_map}
+midpoints_jct <- midpoints |> select(edge_id) |> bind_cols(fastest_all)
 
-
-
-
-
-
-
-
-
-
-
+graph_sf_centrality |> left_join(midpoints_jct,by = join_by(edge_id)) |> 
+  tm_shape()+
+  tm_lines("dist")
+```
 
 
 ## Saving data
 ```{r save_network_data}
+#| eval: false
+ 
 network_data <- list(network = graph_sf_flows,
                      junctions = junctions_flows,
                      graph = graph)
