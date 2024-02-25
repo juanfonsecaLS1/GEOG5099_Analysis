@@ -284,12 +284,16 @@ tm_shape(graph_sf_flows)+
 lsoa_data <- st_read("03_preprocessing_files/LSOA_data.geoJSON")
 ```
 
+Road links are joined to the LSOA based on the largest overlap. It will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e. if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively. MAUP are acknowledged to be a limitation.
+
 ```{r lsoa_to_roads}
 edge_lsoa <- graph_sf_flows |>
-  select(edge_id) |>
+  select(edge_id,d) |>
   st_join(lsoa_data |> select(LSOA21CD),
           largest = T) |>
-  st_drop_geometry()
+  st_drop_geometry() |> 
+  mutate(portion_lsoa = d/sum(d),.by = LSOA21CD) |> 
+  select(-d)
 ```
 
 ## Network metrics
@@ -360,20 +364,22 @@ graph_centr <- graph_contr |>
   dodgr_centrality(contract = T)
 ```
 
-And joined with the `sf` object of the network. 
+And joined with the `sf` object of the network. The values of centrality are scaled dividing by the maximum number
 ```{r centrality_to_graph}
 tbl_centrality <- tibble(edge_id = graph_centr$edge_id,
        centrality = graph_centr$centrality)
 
 graph_sf_centrality <- graph_sf_flows |>
-  left_join(tbl_centrality,by = join_by(edge_id))
+  left_join(tbl_centrality,by = join_by(edge_id)) |> 
+  mutate(std.centrality = centrality/max(centrality,na.rm = T))
 ```
+
 
 A map to explore the centrality results
 ```{r map_centrality}
 tmap_mode("plot")
 tm_shape(graph_sf_centrality)+
-  tm_lines(col = "centrality",palette = "viridis",lwd = 1,style = "fisher")
+  tm_lines(col = "std.centrality",palette = "viridis",lwd = 1,style = "fisher")
 ```
 
 
@@ -408,42 +414,70 @@ times_matrix_flows <- dodgr_times(graph_clean,
                                   shortest = F)
 ```
 
-Using the times matrix, we extract the `id` of the nearest junction with known flows 
+Checking the number of unconnected links. Zero are expected as we are analysing the main component of the graph
+```{r}
+length(colSums(times_matrix_flows)[is.na(colSums(times_matrix_flows,na.rm = T))])
+```
 
-```{r id_nearest_jct}
+
+Using the times matrix, we extract the `id` of the nearest junction with known flows 
+```{r id_nearest_jct,warning=FALSE}
 fastest_all <- tibble(
-  id = 
+  id.jct = 
     apply(times_matrix_flows, 2,
-          \(x) {id_jct_flows$id[match(min(x), x)]}
+          \(x) {id_jct_flows$id[match(min(x,na.rm = TRUE), x)]}
     ),
-  dist =
+  dist.jct =
     apply(times_matrix_flows, 2,\(x) min(x,na.rm = TRUE)
       )
   )
 ```
 
-
+Joining the id of the nearest known count and the distance.
 ```{r dist_from_jct_map}
 midpoints_jct <- midpoints |> select(edge_id) |> bind_cols(fastest_all)
 
-graph_sf_centrality |> left_join(midpoints_jct,by = join_by(edge_id)) |> 
+graph_sf_centrality |>
+  left_join(midpoints_jct,
+            by = join_by(edge_id)) |> 
   tm_shape()+
-  tm_lines("dist")
+  tm_lines("dist.jct")
+```
+
+## Consolidating all data
+
+```{r}
+sf_net_full_data <- graph_sf_centrality |>
+  left_join(midpoints_jct,
+            by = join_by(edge_id)) |> 
+  left_join(junctions_flows |>
+              st_drop_geometry() |>
+              select(id,flow.2022,flow.2023),
+            by = c("id.jct"="id"),
+            suffix = c("",".jct")) |> 
+  left_join(edge_lsoa,by = join_by(edge_id))
+
 ```
 
 
+```{r,echo=FALSE}
+network_data <- list(network = sf_net_full_data,
+                     junctions = junctions_flows,
+                     graph = graph_clean)
+write_rds(network_data,file = "03_preprocessing_files/network_data.rds")
+```
+
 ## Saving data
 ```{r save_network_data}
-#| eval: false
- 
-network_data <- list(network = graph_sf_flows,
-                     junctions = junctions_flows,
-                     graph = graph)
-write_rds(network_data,file = "03_preprocessing_files/network_data.rds")
-try(file.remove("03_preprocessing_files/raw_network.geoJSON"))
-st_write(network_fill,"03_preprocessing_files/raw_network.geoJSON")
-try(file.remove("03_preprocessing_files/sf_junctions.geoJSON"))
-st_write(junctions_flows,"03_preprocessing_files/sf_junctions.geoJSON")
+st_write(sf_net_full_data, "03_preprocessing_files/network_data.gpkg",
+         layer = "network_data",
+         delete_layer = T,
+         append = T)
+st_write(lsoa_data_density2,
+         "03_preprocessing_files/network_data.gpkg",
+         layer = "LSOA",
+         delete_layer = T,
+         append = T)
 ```
 
 
