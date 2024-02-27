@@ -204,9 +204,17 @@ graph_sf_flows$road_type <-
                  "minor")
 ```
 
+```{r,include=FALSE,message=FALSE,warning=FALSE}
+tmap_mode("plot")
+```
+
+```{r}
+tm_shape(graph_sf_flows)+
+  tm_lines(col = "road_type",lwd = 1,palette = "-Greens")
+```
 
 The following map shows the road network and the flows that have been assigned
-```{r assign_map}
+```{r assign_map,message=FALSE,warning=FALSE}
 tmap_mode("plot")
 tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
   tm_lines("grey",lwd = 1)+
@@ -476,6 +484,11 @@ st_write(sf_net_full_data, "03_preprocessing_files/network_data.gpkg",
 st_write(lsoa_data_density2,
          "03_preprocessing_files/network_data.gpkg",
          layer = "LSOA",
+         delete_layer = T,
+         append = T)
+st_write(junctions_flows,
+         "03_preprocessing_files/network_data.gpkg",
+         layer = "junctions",
          delete_layer = T,
          append = T)
 ```
