@@ -455,7 +455,40 @@ tm_basemap()+
 
 Although these changes seem suspicious, these records will not be discarded for the final analysis.
 
-The spatial object with the counts is updated to be consistent with the AADF dataframe
+#### Very low flows
+
+```{r check_range}
+range(aadf_data$flow.2022)
+range(aadf_data$flow.2023)
+```
+
+```{r}
+low_aadf <- aadf_data |> 
+  mutate(across(starts_with("flow"),list(low = \(x) x<100))) |> 
+  filter(flow.2022_low|flow.2023_low) |> 
+  select(group_id,subgroup_id)
+```
+
+```{r}
+tm_basemap()+
+  tm_shape(sf_counts |>
+             anti_join(low_aadf,
+                       by = join_by(group_id,subgroup_id)))+
+  tm_dots(col = "black",alpha = 0.3,group = "Other sites")+
+  tm_shape(sf_counts |>
+             semi_join(low_aadf,
+                       by = join_by(group_id,subgroup_id)))+
+  tm_dots(col = "red",size = 1, group = "Low AADF")
+```
+
+The sites with AADF lower than 100 are discarded
+
+```{r}
+aadf_data <- aadf_data |>
+  anti_join(low_aadf,by = join_by(group_id,subgroup_id))
+```
+
+The spatial object with the counts is updated to make it consistent with the AADF dataframe
 
 ```{r sf_clening}
 sf_counts_selected <- sf_counts |>
@@ -466,7 +499,7 @@ sf_counts_selected <- sf_counts |>
 #### Study area bounds
 
 ```{r}
-buffer_distance = max(st_distance(sf_counts,sf_counts))*0.15
+buffer_distance = max(st_distance(sf_counts,sf_counts))*1
 library(MinorRoadTraffic)
 bounds <- sf_counts |>
   make_convex_hull(dist = buffer_distance)
