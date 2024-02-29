@@ -115,7 +115,7 @@ graph <- dodgr::weight_streetnet(network_fill,
 
 ```
 
-As the network has been clipped, it is possible to find some disconnected parts from the main network, these smaller component will be discarded. 
+As the network has been clipped, it is possible to find some disconnected parts from the main network, these smaller component will be discarded; additionally, duplicated edges are discarded. 
 
 ```{r}
 main_component <- tibble(component = graph$component) |> 
@@ -123,19 +123,28 @@ main_component <- tibble(component = graph$component) |>
   filter(n == max(n)) |>
   pull(component)
 
-graph_clean <- graph[graph$component %in% main_component,]
+graph_c1 <- graph[graph$component %in% main_component,] |>
+  dodgr_deduplicate_graph()
+```
+
+Betweenness centrality is calculated using the contracted graph and `dodgr`
+```{r centrality_calc}
+graph_clean <- graph_c1 |> 
+  dodgr_centrality(contract = T)
 ```
 
 
 An `sf` object is produced from the clean network
 ```{r}
-graph_sf <- dodgr::dodgr_to_sf(graph_clean) |> st_transform(27700)
+graph_sf <- dodgr::dodgr_to_sf(graph_clean) |>
+  st_transform(27700)
 ```
 
 
 Links within 20 metres from the count are considered and then filtered using the  stated direction; then the nearest feature/link with the correct bearing is selected. If two or more counts are assigned to the same road link/graph, the mean flow is calculated. 
 ```{r}
-traffic_buffer <- sf_aadf |> st_buffer(20)
+traffic_buffer <- sf_aadf |>
+  st_buffer(20)
 
 road_intersects <- st_intersects(traffic_buffer,graph_sf)
 
@@ -289,7 +298,7 @@ tm_shape(graph_sf_flows)+
 ### LSOA data
 
 ```{r load_lsoa_data}
-lsoa_data <- st_read("03_preprocessing_files/LSOA_data.geoJSON")
+lsoa_data <- st_read("03_preprocessing_files/LSOA_data.gpkg")
 ```
 
 Road links are joined to the LSOA based on the largest overlap. It will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e. if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively. MAUP are acknowledged to be a limitation.
@@ -305,6 +314,13 @@ edge_lsoa <- graph_sf_flows |>
 ```
 
 ## Network metrics
+
+### Catchment area by roadlink
+
+<!-- add a calculation for one-sided buffer -->
+
+<!-- Voronoi polygons are not easy to generate for directed networks as there are overlapping links with different ids  -->
+
 ### Road density
 This is an improved version of the `road_density` function in the `MinorRoadTraffic` package
 ```{r road_density, warning=FALSE}
@@ -325,7 +341,7 @@ lsoa_data$road_km <- pbapply::pbvapply(seq_along(zone_inter),
                              FUN.VALUE = numeric(1))
 
 lsoa_data_density <-
-  lsoa_data |> mutate(area_km2 = as.numeric(st_area(geometry)) / 1e6,
+  lsoa_data |> mutate(area_km2 = as.numeric(st_area(geom)) / 1e6,
                       road_density = road_km / area_km2)
 ```
 
@@ -350,7 +366,7 @@ lsoa_junctions <- sf::st_intersects(lsoa_data,
 lsoa_data_density$jct_counts <- pbapply::pbvapply(lsoa_junctions,length,integer(1))
 
 lsoa_data_density2 <-
-  lsoa_data_density |> mutate(area_km2 = as.numeric(st_area(geometry)) / 1e6,
+  lsoa_data_density |> mutate(area_km2 = as.numeric(st_area(geom)) / 1e6,
                       jct_density = jct_counts / area_km2)
 ```
 
@@ -363,22 +379,11 @@ tm_shape(lsoa_data_density2)+
               border.col = "grey")
 ```
 
-
 ### Centrality
-Betweenness centrality is calculated using the contracted graph and `dodgr`
-```{r centrality_calc}
-graph_centr <- graph_contr |> 
-  dodgr_deduplicate_graph() |> 
-  dodgr_centrality(contract = T)
-```
 
-And joined with the `sf` object of the network. The values of centrality are scaled dividing by the maximum number
-```{r centrality_to_graph}
-tbl_centrality <- tibble(edge_id = graph_centr$edge_id,
-       centrality = graph_centr$centrality)
-
+The values of centrality calculated before are scaled dividing by the maximum value
+```{r centrality_scaling}
 graph_sf_centrality <- graph_sf_flows |>
-  left_join(tbl_centrality,by = join_by(edge_id)) |> 
   mutate(std.centrality = centrality/max(centrality,na.rm = T))
 ```
 
@@ -389,6 +394,12 @@ tmap_mode("plot")
 tm_shape(graph_sf_centrality)+
   tm_lines(col = "std.centrality",palette = "viridis",lwd = 1,style = "fisher")
 ```
+
+### Catchment for major roads
+
+<!-- use the dodgr isoverts functions to get different catchment areas to be used with  the one-sided buffers -->
+
+<!-- try different isobands 5 and 25 miles were used by Selby... different scale -->
 
 
 ### Distance from minor-major junctions

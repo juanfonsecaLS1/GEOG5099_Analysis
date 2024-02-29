@@ -453,7 +453,15 @@ tm_basemap()+
   tm_dots(col = "red",group = "High change sites")
 ```
 
-Although these changes seem suspicious, these records will not be discarded for the final analysis.
+Although these changes seem suspicious, these records will not be discarded for the final analysis. Instead, the highest value is going to be used for both years.
+
+```{r}
+aadf_data_2 <- aadf_checks |>
+  mutate(fmax = pmax(flow.2022,flow.2023)) |> 
+  mutate(flow.2022 = if_else(abs(pdiff)>0.5|is.nan(pdiff),fmax,flow.2022),
+         flow.2023 = if_else(abs(pdiff)>0.5|is.nan(pdiff),fmax,flow.2023)) |> 
+  select(group_id:flow.2023)
+```
 
 #### Very low flows
 
@@ -463,7 +471,7 @@ range(aadf_data$flow.2023)
 ```
 
 ```{r}
-low_aadf <- aadf_data |> 
+low_aadf <- aadf_data_2 |> 
   mutate(across(starts_with("flow"),list(low = \(x) x<100))) |> 
   filter(flow.2022_low|flow.2023_low) |> 
   select(group_id,subgroup_id)
@@ -484,15 +492,15 @@ tm_basemap()+
 The sites with AADF lower than 100 are discarded
 
 ```{r}
-aadf_data <- aadf_data |>
+aadf_data_clean <- aadf_data_2 |>
   anti_join(low_aadf,by = join_by(group_id,subgroup_id))
 ```
 
 The spatial object with the counts is updated to make it consistent with the AADF dataframe
 
-```{r sf_clening}
+```{r sf_cleaning}
 sf_counts_selected <- sf_counts |>
-  semi_join(aadf_data,
+  semi_join(aadf_data_clean,
             by = join_by(group_id,subgroup_id))
 ```
 
@@ -512,7 +520,7 @@ The following code produces a `csv` file with the AADF of all sites, and `geoJSO
 
 ```{r count_data_saving}
 dir.create("03_preprocessing_files",showWarnings = F)
-write_csv(aadf_data,file = "03_preprocessing_files/aadf_data.csv",append = F)
+write_csv(aadf_data_clean,file = "03_preprocessing_files/aadf_data.csv",append = F)
 
 try(file.remove("03_preprocessing_files/grouped_counts.geojson"))
 st_write(sf_counts_selected,"03_preprocessing_files/grouped_counts.geojson",append = F)

@@ -37,11 +37,11 @@ lsoa <- download_lsoa_2021()
 
 lsoa_fixed <- lsoa |> st_make_valid()
 lsoa_selected <- lsoa_fixed[bounds,] 
-st_write(lsoa_selected,"02_raw_census/LSOA_selected.geoJSON")
+st_write(lsoa_selected,"02_raw_census/LSOA_selected.gpkg")
 
 rm(lsoa,lsoa_fixed)
 }else{
-  lsoa_selected <- st_read("02_raw_census/LSOA_selected.geoJSON")
+  lsoa_selected <- st_read("02_raw_census/LSOA_selected.gpkg")
 }
 
 ```
@@ -84,6 +84,58 @@ pop <- read_csv(unz(file.path("02_raw_census",
                  ~ gsub("Residence type: ","",.x))|> 
   tibble(.name_repair = "universal")
 ```
+
+#### Workplace population
+```{r wp_pop_data}
+if(!file.exists(file.path("02_raw_census","census","wp_pop_2021.zip"))){
+  download.file("https://www.nomisweb.co.uk/output/census/2021/wp001.zip",
+              destfile = file.path("02_raw_census","census","wp_pop_2021.zip"),
+                       mode = "wb")}
+wp_pop <- read_csv(
+  unz(
+    file.path("02_raw_census",
+              "census",
+              "wp_pop_2021.zip"),
+    "WP001_lsoa.csv"
+  ),
+  col_types = cols(
+    `Lower layer Super Output Areas Code` = col_character(),
+    `Lower layer Super Output Areas Label` = col_character(),
+    Count = col_double()
+  )
+) |> 
+  tibble(.name_repair = "universal")
+```
+
+#### Workplace method to travel to work
+```{r wp_method_ttw}
+if(!file.exists(file.path("02_raw_census", "census", "wp_mode_2021.zip"))) {
+  download.file(
+    "https://www.nomisweb.co.uk/output/census/2021/wp025.zip",
+    destfile = file.path("02_raw_census", "census", "wp_mode_2021.zip"),
+    mode = "wb"
+  )
+}
+wp_mode <- read_csv(
+  unz(
+    file.path("02_raw_census",
+              "census",
+              "wp_mode_2021.zip"),
+    "WP025_msoa.csv"
+  ),
+  col_types = cols(
+    `Middle layer Super Output Areas Code` = col_character(),
+    `Middle layer Super Output Areas Label` = col_character(),
+    `Method used to travel to workplace (12 categories) Code` = col_double(),
+    `Method used to travel to workplace (12 categories) Label` = col_character(),
+    Count = col_double()
+  )
+) |> 
+  tibble(.name_repair = "universal")
+```
+
+
+
 
 ### Exmployment Status TS066
 ```{r census_employment}
@@ -223,6 +275,18 @@ lsoa_employ <- employ |>
   rename(total_employed = Economically.active..excluding.full.time.students..In.employment)
 ```
 
+
+#### Workplace population
+```{r}
+lsoa_wp_pop <- wp_pop |> 
+  semi_join(lsoa_selected,
+            by = c("Lower.layer.Super.Output.Areas.Code"="LSOA21CD")) |> 
+  select(Lower.layer.Super.Output.Areas.Code,Count) |> 
+  rename(geography.code = Lower.layer.Super.Output.Areas.Code,
+         wk_pop = Count)
+```
+
+
 #### Car Availability
 ```{r}
 lsoa_car_avail <- car_avail |>
@@ -247,16 +311,16 @@ lsoa_pbcc <- pbcc |> select(LSOA11,cars_percap_2018)
 ```{r}
 LSOA_data <- lsoa_selected |> 
   left_join(
-    lsoa_pop |> 
-  left_join(lsoa_employ,by="geography.code") |> 
-  left_join(lsoa_car_avail,by="geography.code")  |> 
-  left_join(lsoa_comm_mode,by="geography.code") |> 
-  left_join(lsoa_pbcc, by=c("geography.code"="LSOA11")),by = c("LSOA21CD"="geography.code"))
+    lsoa_pop |>
+      left_join(lsoa_employ, by = "geography.code") |>
+      left_join(lsoa_wp_pop, by = "geography.code") |>
+      left_join(lsoa_car_avail, by = "geography.code")  |>
+      left_join(lsoa_comm_mode, by = "geography.code") |>
+      left_join(lsoa_pbcc, by = c("geography.code" = "LSOA11")), by = c("LSOA21CD"="geography.code"))
 ```
 
 ```{r}
-file.remove("03_preprocessing_files/LSOA_data.geoJSON")
-st_write(LSOA_data,"03_preprocessing_files/LSOA_data.geoJSON")
+st_write(LSOA_data,"03_preprocessing_files/LSOA_data.gpkg",append = F)
 ```
 
 ### Some visualisations of the data
@@ -267,6 +331,16 @@ tm_shape(LSOA_data)+
               border.col = "white",
               palette = "Blues",
               title = "Total Population 2021")
+```
+
+```{r map_wp_population}
+tmap_mode("plot")
+tm_shape(LSOA_data)+
+  tm_polygons(col = "wk_pop",
+              border.col = "white",
+              style = "jenks",
+              palette = "Reds",
+              title = "Total Workplace Population 2021")
 ```
 
 ```{r map_employ}

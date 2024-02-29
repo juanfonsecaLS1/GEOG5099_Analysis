@@ -1,0 +1,196 @@
+---
+title: "Exploratory Data Analysis"
+author: "Juan Fonseca"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(kableExtra)
+library(hrbrthemes)
+library(tmap)
+```
+
+```{r}
+net_data_sf <- sf::st_read("03_preprocessing_files/network_data.gpkg", layer = "network_data")
+LSOA_sf <- sf::st_read("03_preprocessing_files/network_data.gpkg", layer = "LSOA")
+
+jct_sf <- sf::st_read("03_preprocessing_files/network_data.gpkg", layer = "junctions")
+
+LSOA_data <- LSOA_sf |> sf::st_drop_geometry()
+```
+
+LSOA data is joined with the network data. Also, total population and total
+people employed are scaled based on the length proportion calculated before. Road type is converted to factor
+
+```{r}
+model_data_sf <- net_data_sf |> left_join(LSOA_data |>
+                                            select(LSOA21CD,
+                                                   total_pop,
+                                                   total_employed,
+                                                   wk_pop,
+                                                   car_avail_perc,
+                                                   road_density,
+                                                   cars_percap_2018,area_km2),
+                                          by = join_by(LSOA21CD)) 
+```
+
+
+```{r}
+model_data <- model_data_sf |>
+  sf::st_drop_geometry() 
+```
+
+<!-- include a quick analysis of the monitored roads minor vs major, also junctions -->
+Extracting sample size based on the number of monitored edges
+```{r table_counts}
+model_data |>
+  mutate(bool.flow.2023 = !is.na(flow.2023)) |> 
+  summarise(n_edges = n(),.by = c(bool.flow.2023,road_type)) |>
+  mutate(sample_size = n_edges/sum(n_edges),
+         .by = road_type) |> 
+  filter(bool.flow.2023) |> 
+  select(road_type,sample_size) |> 
+  kable(digits = 3) |> 
+  kable_minimal()
+```
+
+Same analysis with distance (%)
+```{r}
+model_data |>
+  mutate(bool.flow.2023 = !is.na(flow.2023)) |> 
+  summarise(d_edges = sum(d),.by = c(bool.flow.2023,road_type)) |>
+  mutate(sample_size = d_edges/sum(d_edges),
+         .by = road_type) |> 
+  filter(bool.flow.2023) |> 
+  select(road_type,sample_size) |> 
+  kable(digits = 3) |> 
+  kable_minimal()
+```
+
+<!-- Analysis of junction types with flows -->
+```{r}
+jct_sf|>
+  sf::st_drop_geometry() |> 
+  mutate(bool.flow.2023 = !is.na(flow.2023)) |> 
+  summarise(n_jct = n(),.by = c(bool.flow.2023,jct_type)) |>
+  mutate(sample_size = n_jct/sum(n_jct),
+         .by = jct_type) |> 
+  filter(bool.flow.2023) |> 
+  select(jct_type,sample_size) |> 
+  kable(digits = 3) |> 
+  kable_minimal()
+```
+
+
+Centrality vs Flows
+
+```{r}
+model_data |> 
+  ggplot(aes(x=std.centrality,y=flow.2023,col=road_type))+
+  geom_point()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+Pop density vs flow
+```{r}
+model_data |> 
+  ggplot(aes(x=(total_pop*car_avail_perc)/area_km2,
+             y=flow.2023,
+             col=road_type))+
+  geom_point()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+Workplace Pop density vs flow
+```{r}
+model_data |> 
+  ggplot(aes(x=wk_pop/area_km2,
+             y=flow.2023,
+             col=road_type))+
+  geom_point()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+
+
+<!-- network centrality should account for both, so probably a weighted centrality is the right way to go -->
+
+
+<!-- population density and jobs per LSOA as per Selby 2011 -->
+
+
+<!-- Two level models, meaning one model for the major roads and another one for the local roads as per  -->
+
+
+## Ordinary Least Squares model
+
+```{r}
+model_data_major <- model_data |>
+  filter(road_type=="major",!is.na(flow.2023)) |>
+  mutate(pop_car_d = (total_pop*car_avail_perc)/area_km2,
+         wk_pop_d = wk_pop/area_km2)
+```
+
+A simple model with the centrality only for major roads
+
+
+<!-- Add the LOG for the flows here -->
+
+```{r}
+m1 <- lm(flow.2023 ~ pop_car_d+wk_pop_d+std.centrality,
+         data = model_data_major)
+summary(m1)
+```
+
+```{r}
+wide_net_data = model_data_sf |>
+  mutate(pop_car_d = (total_pop*car_avail_perc)/area_km2,
+         wk_pop_d = wk_pop/area_km2) |>
+  filter(road_type == "major")
+
+wide_net_data$pred.flow.2023 <- predict(m1,wide_net_data)
+wide_net_data$residual <- wide_net_data$pred.flow.2023 - wide_net_data$flow.2023
+
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(wide_net_data)+
+  tm_lines("pred.flow.2023",palette = "viridis",style = "fisher")
+```
+```{r}
+tmap_mode("view")
+tm_shape(wide_net_data)+
+  tm_lines("residual",palette = "viridis",style = "fisher",lwd = 2,midpoint = 0)
+```
+
+Counter intuitive but the dataset covers a very limited part of the network and, therefore, the available data cannot be used for training the model in road links with different conditions. 
+```{r}
+
+
+wide_net_data |> 
+  mutate(flow.bool = !is.na(flow.2023)) |> 
+  ggplot(aes(std.centrality,fill=flow.bool))+
+  geom_histogram(bins = 30,alpha = 0.5,col= "white")+
+  scale_x_log10()+
+  theme_ipsum_rc()+
+  facet_wrap(road_type~.)
+  
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
