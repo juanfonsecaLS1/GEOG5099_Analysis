@@ -4,7 +4,12 @@ title: "Overview"
 
 ***Work in Progress***
 
-This web contains the code produced for a traffic estimation project
-for GEO5099.
+This web contains the code produced for a traffic estimation project for GEO5099.
 
+To do:
 
+-   Produce one side buffer for minor roads
+-   Calculate iso-distance with dodgr for all from_id nodes in major roads
+-   consolidate the catchment pop and wk_pop using the isobands
+-   log the counts on the model
+-   ...

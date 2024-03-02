@@ -3,7 +3,7 @@ title: "Road Network"
 author: "Juan Fonseca"
 format: html
 ---
-```{r libraries}
+```{r libraries, message=FALSE,warning=FALSE}
 library(tidyverse)
 library(dodgr)
 library(osmextract)
@@ -301,7 +301,10 @@ tm_shape(graph_sf_flows)+
 lsoa_data <- st_read("03_preprocessing_files/LSOA_data.gpkg")
 ```
 
-Road links are joined to the LSOA based on the largest overlap. It will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e. if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively. MAUP are acknowledged to be a limitation.
+Road links are spatially joined to the LSOA based on the largest overlap. 
+
+#### Catchment of each link
+Two main approaches will be used to estimate the extent to which each road provides access to the population and jobs in each LSOA. Firstly, it will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e. if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively. 
 
 ```{r lsoa_to_roads}
 edge_lsoa <- graph_sf_flows |>
@@ -313,13 +316,15 @@ edge_lsoa <- graph_sf_flows |>
   select(-d)
 ```
 
-## Network metrics
+The second approach consist in producing a left-sided buffer for each link, the resulting areas will be used with the population and job density to estimate the number of inhabitants and jobs served. As an example
 
-### Catchment area by roadlink
 
 <!-- add a calculation for one-sided buffer -->
 
 <!-- Voronoi polygons are not easy to generate for directed networks as there are overlapping links with different ids  -->
+
+## Network metrics
+
 
 ### Road density
 This is an improved version of the `road_density` function in the `MinorRoadTraffic` package

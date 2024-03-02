@@ -6,7 +6,7 @@ format: html
 
 ## LSOA Boundaries
 
-```{r libraries}
+```{r libraries, message=FALSE,warning=FALSE}
 library(sf)
 library(tidyverse)
 library(tmap)
@@ -20,7 +20,7 @@ bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
 
 
 ```{r lsoa_boundaries}
-if(!file.exists("02_raw_census/LSOA_selected.geoJSON")){
+if(!file.exists("02_raw_census/LSOA_selected.gpkg")){
 download_lsoa_2021 <- function(url = "https://github.com/juanfonsecaLS1/GEOG5099_Analysis/releases/download/v0/LSOA_Dec_2021_Boundaries_Generalised_Clipped_EW_BGC_2022_5605507071095448309.geojson",
                               bounds){
   
@@ -59,7 +59,7 @@ tm_basemap("OpenStreetMap")+
 The following code downloads the 2021 Census data. 
 
 ### Population TS001
-```{r census_population}
+```{r census_population,message=FALSE,warning=FALSE}
 dir.create(file.path("02_raw_census","census"),recursive = T,showWarnings = F)
 if(!file.exists(file.path("02_raw_census",
                               "census",
@@ -86,7 +86,7 @@ pop <- read_csv(unz(file.path("02_raw_census",
 ```
 
 #### Workplace population
-```{r wp_pop_data}
+```{r wp_pop_data,message=FALSE,warning=FALSE}
 if(!file.exists(file.path("02_raw_census","census","wp_pop_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/wp001.zip",
               destfile = file.path("02_raw_census","census","wp_pop_2021.zip"),
@@ -108,7 +108,7 @@ wp_pop <- read_csv(
 ```
 
 #### Workplace method to travel to work
-```{r wp_method_ttw}
+```{r wp_method_ttw,message=FALSE,warning=FALSE}
 if(!file.exists(file.path("02_raw_census", "census", "wp_mode_2021.zip"))) {
   download.file(
     "https://www.nomisweb.co.uk/output/census/2021/wp025.zip",
@@ -138,7 +138,7 @@ wp_mode <- read_csv(
 
 
 ### Exmployment Status TS066
-```{r census_employment}
+```{r census_employment,message=FALSE,warning=FALSE}
 if(!file.exists(file.path("02_raw_census","census","employment_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts066.zip",
               destfile = file.path("02_raw_census","census","employment_2021.zip"),
@@ -192,7 +192,7 @@ col_types = cols(
 
 
 ### Car Availability TS045
-```{r census_caravail}
+```{r census_caravail,message=FALSE,warning=FALSE}
 if(!file.exists(file.path("02_raw_census","census","car_avail_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts045.zip",
               destfile = file.path("02_raw_census","census","car_avail_2021.zip"),
@@ -218,7 +218,7 @@ car_avail <- read_csv(unz(file.path("02_raw_census",
 ```
 
 ### Method to work (mode) TS061
-```{r census_commute_mode}
+```{r census_commute_mode,message=FALSE,warning=FALSE}
 if(!file.exists(file.path("02_raw_census","census","comm_mode_2021.zip"))){
   download.file("https://www.nomisweb.co.uk/output/census/2021/census2021-ts061.zip",
               destfile = file.path("02_raw_census","census","comm_mode_2021.zip"),
@@ -253,7 +253,7 @@ comm_mode <- read_csv(
 ```
 
 ### Data from [Place-based Carbon Calculator](https://www.carbon.place/data/)
-```{r carboncalc_data}
+```{r carboncalc_data,message=FALSE,warning=FALSE}
 pbcc <- download_pbcc() |>
   semi_join(lsoa_selected,by = c("LSOA11NM"="LSOA21NM"))
 ```
@@ -358,7 +358,7 @@ tm_shape(LSOA_data)+
   tm_polygons(col = "car_avail_perc",
               border.col = "white",
               palette = "Reds",
-              title = "Car available in %households")
+              title = "% of households with one or more cars")
 ```
 
 

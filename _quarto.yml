@@ -3,6 +3,8 @@ project:
   output-dir: docs
   render:
     - "*.qmd"
+execute:
+  freeze: auto  # re-render only when source changes
 website:
   title: "Traffic Estimation Using Open Data"
   search: false

@@ -4,7 +4,7 @@ author: "Juan Fonseca"
 format: html
 ---
 
-```{r}
+```{r,message=FALSE,warning=FALSE}
 library(tidyverse)
 library(rjson)
 library(httr)
@@ -215,7 +215,7 @@ First, we upload the `downloaded_files` object with all the files available
 downloaded_files_full <- list.files("02_raw_data_counts/",full.names = T)
 ```
 
-```{r count_data_load}
+```{r count_data_load,warning=FALSE,message=FALSE}
 library(data.table)
 library(dtplyr)
 

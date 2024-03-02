@@ -4,14 +4,14 @@ author: "Juan Fonseca"
 format: html
 ---
 
-```{r}
+```{r libraries, message=FALSE,warning=FALSE}
 library(tidyverse)
 library(kableExtra)
 library(hrbrthemes)
 library(tmap)
 ```
 
-```{r}
+```{r data_load}
 net_data_sf <- sf::st_read("03_preprocessing_files/network_data.gpkg", layer = "network_data")
 LSOA_sf <- sf::st_read("03_preprocessing_files/network_data.gpkg", layer = "LSOA")
 
@@ -23,7 +23,7 @@ LSOA_data <- LSOA_sf |> sf::st_drop_geometry()
 LSOA data is joined with the network data. Also, total population and total
 people employed are scaled based on the length proportion calculated before. Road type is converted to factor
 
-```{r}
+```{r subset_data}
 model_data_sf <- net_data_sf |> left_join(LSOA_data |>
                                             select(LSOA21CD,
                                                    total_pop,
@@ -36,7 +36,7 @@ model_data_sf <- net_data_sf |> left_join(LSOA_data |>
 ```
 
 
-```{r}
+```{r drop_geom}
 model_data <- model_data_sf |>
   sf::st_drop_geometry() 
 ```
