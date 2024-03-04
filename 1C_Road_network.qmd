@@ -21,40 +21,36 @@ library(MinorRoadTraffic)
 
 ## Downloading data
 
-For this analysis, OpenStreetMap will be used for the road network.
+For this analysis, OpenStreetMap will be used for the road network. Network data will be downloaded in silicate format
 
-```{r osm_get}
-osm_raw <- oe_get("East Yorkshire with Hull",
-                 extra_tags = c("ref", "highway", "junction", "maxspeed","oneway"))
-```
-
-An alternative source can be the [OS Open Roads](https://osdatahub.os.uk/downloads/open/OpenRoads).
-
-## Pre-Processing OSM
-
-### Clipping road network
-
-The study area bounds will be used to clip the road network.
+The study area bounds will be used to clip the road network, these are read from the files produced before
 ```{r load_counts_results}
 sf_counts <- st_read("03_preprocessing_files/grouped_counts.geojson")
 bounds <- st_read(dsn = "03_preprocessing_files/bounds.geoJSON")
 ```
 
-```{r clipping}
-osm_clean = extract_from_osm(osm_raw,
-                             bounds,
-                             col_names = c("osm_id","name","ref","highway",
-                                           "junction","maxspeed","geometry","oneway"))
+A bbox is generated from the bounds to be used to extract the OSM data with `dodgr_streetnet_sc`
 
-network = osm_clean$network
-rm(osm_clean, osm_raw)
+```{r}
+bbox_hull <- bounds |> st_transform(4326) |> st_bbox() |> as.numeric()
 ```
 
-### Filling missing values
-The `ref` attribute is filled based on the neighbouring links. 
-```{r attr_filling}
-network_fill = osm_fill_ref2(network)
+```{r osm_get}
+if(!file.exists("03_preprocessing_files/osm_sc.rds")) {
+  # This is required when firewall restrictions apply
+  assign("has_internet_via_proxy",
+         TRUE,
+         environment(curl::has_internet))
+  osm_sc <- dodgr_streetnet_sc(bbox = bbox_hull)
+  write_rds(osm_sc, "03_preprocessing_files/osm_sc.rds")
+} else {
+  osm_sc <- read_rds("03_preprocessing_files/osm_sc.rds")
+}
 ```
+
+*An alternative source can be the [OS Open Roads](https://osdatahub.os.uk/downloads/open/OpenRoads).*
+
+## Pre-Processing OSM
 
 ## Join with other datasets
 
@@ -77,18 +73,6 @@ sf_aadf <- sf_counts |>
   left_join(aadf_data,by = join_by(group_id, subgroup_id))
 ```
 
-A quick visualisation
-```{r map_net_counts}
-tmap_mode("plot")
-tm_basemap("OpenStreetMap")+
-tm_shape(bounds)+
-  tm_polygons(alpha = 0.3)+
-  tm_shape(network)+
-  tm_lines(col = "orange",alpha = 0.4)+
-  tm_shape(sf_aadf)+
-  tm_dots(col = "blue")
-```
-
 It is assumed that the locations of the loops are correct and the uncertainty of the coordinates is very small. 
 
 <!-- Include something to describe the bearing check -->
@@ -107,7 +91,12 @@ major_ref = c("motorway",
               "trunk",
               "trunk_link")
 
-graph <- dodgr::weight_streetnet(network_fill,
+road_types = c("motorway", "motorway_link", "trunk", "trunk_link", "primary",
+               "primary_link", "secondary", "secondary_link",
+               "tertiary", "tertiary_link",
+               "unclassified", "living_street", "residential")
+
+graph <- dodgr::weight_streetnet(osm_sc,
                                  keep_cols = c("name","ref","highway","junction","maxspeed","oneway"),
                                  wt_profile = "motorcar"
                                  )
@@ -123,16 +112,16 @@ main_component <- tibble(component = graph$component) |>
   filter(n == max(n)) |>
   pull(component)
 
-graph_c1 <- graph[graph$component %in% main_component,] |>
+# Discarding unconnected roads and not public roads
+graph_c1 <- graph[graph$component %in% main_component & graph$highway %in% road_types,] |>
   dodgr_deduplicate_graph()
 ```
 
 Betweenness centrality is calculated using the contracted graph and `dodgr`
 ```{r centrality_calc}
-graph_clean <- graph_c1 |> 
+graph_clean <- graph_c1 |>  
   dodgr_centrality(contract = T)
 ```
-
 
 An `sf` object is produced from the clean network
 ```{r}
@@ -140,6 +129,16 @@ graph_sf <- dodgr::dodgr_to_sf(graph_clean) |>
   st_transform(27700)
 ```
 
+A quick visualisation
+```{r map_net_counts}
+tmap_mode("plot")
+tm_shape(bounds)+
+  tm_polygons(alpha = 0.3)+
+  tm_shape(graph_sf)+
+  tm_lines(col = "orange",alpha = 0.4)+
+  tm_shape(sf_aadf)+
+  tm_dots(col = "blue")
+```
 
 Links within 20 metres from the count are considered and then filtered using the  stated direction; then the nearest feature/link with the correct bearing is selected. If two or more counts are assigned to the same road link/graph, the mean flow is calculated. 
 ```{r}
@@ -225,12 +224,12 @@ tm_shape(graph_sf_flows)+
 The following map shows the road network and the flows that have been assigned
 ```{r assign_map,message=FALSE,warning=FALSE}
 tmap_mode("plot")
-tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
-  tm_lines("grey",lwd = 1)+
-  tm_shape(sf_aadf)+
+tm_shape(sf_aadf)+
   tm_dots("blue",alpha=0.5)+
+  tm_shape(graph_sf_flows |> filter(is.na(flow.2023)))+
+  tm_lines("grey",lwd = 1)+
   tm_shape(graph_sf_flows |> drop_na(flow.2023))+
-  tm_lines("flow.2023",lwd = 1.5)
+  tm_lines("flow.2023",lwd = 2.5)
 ```
 
 #### Junctions
@@ -303,8 +302,8 @@ lsoa_data <- st_read("03_preprocessing_files/LSOA_data.gpkg")
 
 Road links are spatially joined to the LSOA based on the largest overlap. 
 
-#### Catchment of each link
-Two main approaches will be used to estimate the extent to which each road provides access to the population and jobs in each LSOA. Firstly, it will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e. if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively. 
+#### Catchment of individual links
+It will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e. if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively. 
 
 ```{r lsoa_to_roads}
 edge_lsoa <- graph_sf_flows |>
@@ -316,15 +315,7 @@ edge_lsoa <- graph_sf_flows |>
   select(-d)
 ```
 
-The second approach consist in producing a left-sided buffer for each link, the resulting areas will be used with the population and job density to estimate the number of inhabitants and jobs served. As an example
-
-
-<!-- add a calculation for one-sided buffer -->
-
-<!-- Voronoi polygons are not easy to generate for directed networks as there are overlapping links with different ids  -->
-
 ## Network metrics
-
 
 ### Road density
 This is an improved version of the `road_density` function in the `MinorRoadTraffic` package
@@ -402,10 +393,37 @@ tm_shape(graph_sf_centrality)+
 
 ### Catchment for major roads
 
-<!-- use the dodgr isoverts functions to get different catchment areas to be used with  the one-sided buffers -->
 
-<!-- try different isobands 5 and 25 miles were used by Selby... different scale -->
+```{r}
+nodes_list <- junctions_flows |> 
+  filter(jct_type!="minor") |> pull(id) |> unique()
 
+# Distance bands
+dlim <- c (200, 500,1000,2000)
+
+d <- dodgr_isoverts(graph_contr, from = nodes_list,dlim =  dlim)
+```
+
+
+
+```{r}
+tmap_mode("plot")
+
+nodes_sample <-c("858681448", d |>
+filter(from=="858681448",dlim<=2000) |> 
+  pull(id))
+
+tm_shape(graph_sf |> 
+  filter(from_id %in% nodes_sample&to_id %in% nodes_sample))+
+  tm_lines("skyblue")+
+  tm_shape(d |>
+  st_as_sf(coords = c("x","y"),crs = 4326) |>
+  filter(from == "858681448"))+
+  tm_dots("dlim",size = 0.1,breaks = c(0,200,500,1000,2000,2500))+
+  tm_shape(junctions_flows |> 
+             filter(id == "858681448"))+
+  tm_dots("red",size = 1)
+```
 
 ### Distance from minor-major junctions
 
@@ -507,6 +525,8 @@ st_write(junctions_flows,
          layer = "junctions",
          delete_layer = T,
          append = T)
+
+write_csv(d,file = "03_preprocessing_files/junctions_catchment.csv")
 ```
 
 
