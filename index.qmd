@@ -8,8 +8,8 @@ This web contains the code produced for a traffic estimation project for GEO5099
 
 To do:
 
--   Produce one side buffer for minor roads
--   Calculate iso-distance with dodgr for all from_id nodes in major roads
+-   Update OSM data extraction to use silicate (better graph representation of the network) (done)
+-   Calculate iso-distance with dodgr for all from_id nodes in major roads (done)
 -   consolidate the catchment pop and wk_pop using the isobands
 -   log the counts on the model
 -   ...
