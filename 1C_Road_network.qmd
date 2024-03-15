@@ -89,7 +89,11 @@ major_ref = c("motorway",
               "primary",
               "primary_link",
               "trunk",
-              "trunk_link")
+              "trunk_link",
+              "secondary",
+              "secondary_link",
+              "tertiary",
+              "tertiary_link")
 
 road_types = c("motorway", "motorway_link", "trunk", "trunk_link", "primary",
                "primary_link", "secondary", "secondary_link",
@@ -393,24 +397,25 @@ tm_shape(graph_sf_centrality)+
 
 ### Catchment for major roads
 
+Points withing iso-chrone bands are extracted using the graph
 
-```{r}
+```{r isoverts}
 nodes_list <- junctions_flows |> 
   filter(jct_type!="minor") |> pull(id) |> unique()
 
 # Distance bands
-dlim <- c (200, 500,1000,2000)
+tlim <- c (1,2,3,4,5)*60
 
-d <- dodgr_isoverts(graph_contr, from = nodes_list,dlim =  dlim)
+d <- dodgr_isoverts(graph_contr, from = nodes_list,tlim =  tlim) |> 
+    mutate(tlim = tlim / 60)
 ```
 
-
-
-```{r}
+An example of the results for one of the nodes
+```{r catch_map}
 tmap_mode("plot")
 
 nodes_sample <-c("858681448", d |>
-filter(from=="858681448",dlim<=2000) |> 
+filter(from=="858681448") |> 
   pull(id))
 
 tm_shape(graph_sf |> 
@@ -419,11 +424,12 @@ tm_shape(graph_sf |>
   tm_shape(d |>
   st_as_sf(coords = c("x","y"),crs = 4326) |>
   filter(from == "858681448"))+
-  tm_dots("dlim",size = 0.1,breaks = c(0,200,500,1000,2000,2500))+
+  tm_dots("tlim",size = 0.1,breaks = c (0,1,2,3,4,5,6),title = "Catchment (min)")+
   tm_shape(junctions_flows |> 
              filter(id == "858681448"))+
   tm_dots("red",size = 1)
 ```
+
 
 ### Distance from minor-major junctions
 
@@ -457,7 +463,7 @@ times_matrix_flows <- dodgr_times(graph_clean,
 ```
 
 Checking the number of unconnected links. Zero are expected as we are analysing the main component of the graph
-```{r}
+```{r check_dists}
 length(colSums(times_matrix_flows)[is.na(colSums(times_matrix_flows,na.rm = T))])
 ```
 
