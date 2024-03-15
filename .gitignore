@@ -53,12 +53,13 @@ rsconnect/
 02_raw_census/
 
 # Folder with intermediate data
-03_preprocessing_files/
+/03_preprocessing_files/
 
 
 # For quarto
 /.quarto/
 /_site/
+/_freeze/
 
 *.csv
 /metadata/
