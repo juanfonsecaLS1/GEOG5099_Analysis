@@ -79,6 +79,7 @@ sensors_buffer = sf_sensors_raw |>
 ```
 
 ```{r map_sites_combine_sample}
+tmap_mode("view")
 tm_basemap("OpenStreetMap") +
   tm_shape(sensors_buffer |> 
              filter(name %in% c("N44131F","N44131X","N44131H"))) +
@@ -401,10 +402,22 @@ tm_basemap()+
   tm_dots(col = "red",group = "Zero counts sites")
 ```
 
+The following plot shows the distribution of daily counts for all sites.
+
+```{r}
+site_d_flow |>  
+  ggplot(aes(Flow))+
+  geom_histogram(binwidth = 100)+
+  facet_wrap(Year~.)
+```
+
+Considering that all sensors are located in signalised junctions with significant levels of traffic, zero counts are assumed to be the result of a problem with the data or non-typical traffic conditions, therefore those records are discarded.
+
 #### Annual Average Daily Flow (AADF) calculation
 
 ```{r aadf_calc}
 aadf_data <- site_d_flow |> 
+  filter(Flow>0) |> 
   anti_join(no_flow_sites,
                        by = join_by(group_id,subgroup_id)) |> 
   summarise(Flow = mean(Flow),.by = c(Year,group_id,subgroup_id)) |> 
@@ -453,21 +466,21 @@ tm_basemap()+
   tm_dots(col = "red",group = "High change sites")
 ```
 
-Although these changes seem suspicious, these records will not be discarded for the final analysis. Instead, the highest value is going to be used for both years.
+Although these changes seem suspicious, these records will not be discarded for the final analysis. Instead, values for both years are going to be replaced by the greater record. 
 
 ```{r}
 aadf_data_2 <- aadf_checks |>
-  mutate(fmax = pmax(flow.2022,flow.2023)) |> 
-  mutate(flow.2022 = if_else(abs(pdiff)>0.5|is.nan(pdiff),fmax,flow.2022),
-         flow.2023 = if_else(abs(pdiff)>0.5|is.nan(pdiff),fmax,flow.2023)) |> 
+  mutate(fmax = pmax(flow.2022,flow.2023,na.rm = T)) |> 
+  mutate(flow.2022 = if_else(abs(pdiff)>0.5|is.nan(pdiff)|is.na(pdiff),fmax,flow.2022),
+         flow.2023 = if_else(abs(pdiff)>0.5|is.nan(pdiff)|is.na(pdiff),fmax,flow.2023)) |> 
   select(group_id:flow.2023)
 ```
 
 #### Very low flows
 
 ```{r check_range}
-range(aadf_data$flow.2022)
-range(aadf_data$flow.2023)
+range(aadf_data_2$flow.2022)
+range(aadf_data_2$flow.2023)
 ```
 
 ```{r}
