@@ -244,6 +244,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#gwpr" id="toc-gwpr" class="nav-link" data-scroll-target="#gwpr">GWPR</a></li>
   <li><a href="#bayesian-negative-binomial-regression" id="toc-bayesian-negative-binomial-regression" class="nav-link" data-scroll-target="#bayesian-negative-binomial-regression">Bayesian Negative Binomial regression</a></li>
   </ul></li>
+  <li><a href="#null-models" id="toc-null-models" class="nav-link" data-scroll-target="#null-models">Null models</a>
+  <ul class="collapse">
+  <li><a href="#glm" id="toc-glm" class="nav-link" data-scroll-target="#glm">GLM</a></li>
+  <li><a href="#gwpr-1" id="toc-gwpr-1" class="nav-link" data-scroll-target="#gwpr-1">GWPR</a></li>
+  <li><a href="#bayesian" id="toc-bayesian" class="nav-link" data-scroll-target="#bayesian">Bayesian</a></li>
+  </ul></li>
   <li><a href="#saving-the-data" id="toc-saving-the-data" class="nav-link" data-scroll-target="#saving-the-data">Saving the data</a></li>
   </ul>
 </nav>
@@ -889,15 +895,15 @@ Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 1: 
-Chain 1:  Elapsed Time: 0.259 seconds (Warm-up)
-Chain 1:                0.275 seconds (Sampling)
-Chain 1:                0.534 seconds (Total)
+Chain 1:  Elapsed Time: 0.228 seconds (Warm-up)
+Chain 1:                0.234 seconds (Sampling)
+Chain 1:                0.462 seconds (Total)
 Chain 1: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
 Chain 2: 
-Chain 2: Gradient evaluation took 3.7e-05 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.37 seconds.
+Chain 2: Gradient evaluation took 7.2e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.72 seconds.
 Chain 2: Adjust your expectations accordingly!
 Chain 2: 
 Chain 2: 
@@ -914,15 +920,15 @@ Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
-Chain 2:  Elapsed Time: 0.249 seconds (Warm-up)
-Chain 2:                0.196 seconds (Sampling)
-Chain 2:                0.445 seconds (Total)
+Chain 2:  Elapsed Time: 0.204 seconds (Warm-up)
+Chain 2:                0.186 seconds (Sampling)
+Chain 2:                0.39 seconds (Total)
 Chain 2: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
 Chain 3: 
-Chain 3: Gradient evaluation took 3.8e-05 seconds
-Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.38 seconds.
+Chain 3: Gradient evaluation took 4e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.4 seconds.
 Chain 3: Adjust your expectations accordingly!
 Chain 3: 
 Chain 3: 
@@ -939,15 +945,15 @@ Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 3: 
-Chain 3:  Elapsed Time: 0.219 seconds (Warm-up)
-Chain 3:                0.183 seconds (Sampling)
-Chain 3:                0.402 seconds (Total)
+Chain 3:  Elapsed Time: 0.206 seconds (Warm-up)
+Chain 3:                0.162 seconds (Sampling)
+Chain 3:                0.368 seconds (Total)
 Chain 3: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 4.3e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.43 seconds.
+Chain 4: Gradient evaluation took 3.1e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.31 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -964,9 +970,9 @@ Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 4: 
-Chain 4:  Elapsed Time: 0.212 seconds (Warm-up)
-Chain 4:                0.166 seconds (Sampling)
-Chain 4:                0.378 seconds (Total)
+Chain 4:  Elapsed Time: 0.197 seconds (Warm-up)
+Chain 4:                0.2 seconds (Sampling)
+Chain 4:                0.397 seconds (Total)
 Chain 4: </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
@@ -995,115 +1001,9 @@ Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 1: 
-Chain 1:  Elapsed Time: 0.214 seconds (Warm-up)
-Chain 1:                0.199 seconds (Sampling)
-Chain 1:                0.413 seconds (Total)
-Chain 1: 
-
-SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
-Chain 2: 
-Chain 2: Gradient evaluation took 4.2e-05 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.42 seconds.
-Chain 2: Adjust your expectations accordingly!
-Chain 2: 
-Chain 2: 
-Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 2: 
-Chain 2:  Elapsed Time: 0.198 seconds (Warm-up)
-Chain 2:                0.202 seconds (Sampling)
-Chain 2:                0.4 seconds (Total)
-Chain 2: 
-
-SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
-Chain 3: 
-Chain 3: Gradient evaluation took 3.7e-05 seconds
-Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.37 seconds.
-Chain 3: Adjust your expectations accordingly!
-Chain 3: 
-Chain 3: 
-Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 3: 
-Chain 3:  Elapsed Time: 0.215 seconds (Warm-up)
-Chain 3:                0.207 seconds (Sampling)
-Chain 3:                0.422 seconds (Total)
-Chain 3: 
-
-SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
-Chain 4: 
-Chain 4: Gradient evaluation took 4.4e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.44 seconds.
-Chain 4: Adjust your expectations accordingly!
-Chain 4: 
-Chain 4: 
-Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 4: 
-Chain 4:  Elapsed Time: 0.24 seconds (Warm-up)
-Chain 4:                0.169 seconds (Sampling)
-Chain 4:                0.409 seconds (Total)
-Chain 4: </code></pre>
-</div>
-<div class="cell-output cell-output-stderr">
-<pre><code>Compiling Stan program...
-Start sampling</code></pre>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
-SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
-Chain 1: 
-Chain 1: Gradient evaluation took 4.6e-05 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.46 seconds.
-Chain 1: Adjust your expectations accordingly!
-Chain 1: 
-Chain 1: 
-Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
-Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
-Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
-Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
-Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
-Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
-Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
-Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
-Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
-Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
-Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
-Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
-Chain 1: 
-Chain 1:  Elapsed Time: 0.224 seconds (Warm-up)
-Chain 1:                0.177 seconds (Sampling)
-Chain 1:                0.401 seconds (Total)
+Chain 1:  Elapsed Time: 0.209 seconds (Warm-up)
+Chain 1:                0.187 seconds (Sampling)
+Chain 1:                0.396 seconds (Total)
 Chain 1: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
@@ -1126,15 +1026,15 @@ Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
-Chain 2:  Elapsed Time: 0.208 seconds (Warm-up)
-Chain 2:                0.2 seconds (Sampling)
-Chain 2:                0.408 seconds (Total)
+Chain 2:  Elapsed Time: 0.228 seconds (Warm-up)
+Chain 2:                0.206 seconds (Sampling)
+Chain 2:                0.434 seconds (Total)
 Chain 2: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
 Chain 3: 
-Chain 3: Gradient evaluation took 2.9e-05 seconds
-Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.29 seconds.
+Chain 3: Gradient evaluation took 4.6e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.46 seconds.
 Chain 3: Adjust your expectations accordingly!
 Chain 3: 
 Chain 3: 
@@ -1151,15 +1051,15 @@ Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 3: 
-Chain 3:  Elapsed Time: 0.216 seconds (Warm-up)
-Chain 3:                0.183 seconds (Sampling)
-Chain 3:                0.399 seconds (Total)
+Chain 3:  Elapsed Time: 0.203 seconds (Warm-up)
+Chain 3:                0.19 seconds (Sampling)
+Chain 3:                0.393 seconds (Total)
 Chain 3: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 5e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.5 seconds.
+Chain 4: Gradient evaluation took 3.5e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.35 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -1176,9 +1076,9 @@ Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 4: 
-Chain 4:  Elapsed Time: 0.248 seconds (Warm-up)
-Chain 4:                0.2 seconds (Sampling)
-Chain 4:                0.448 seconds (Total)
+Chain 4:  Elapsed Time: 0.197 seconds (Warm-up)
+Chain 4:                0.205 seconds (Sampling)
+Chain 4:                0.402 seconds (Total)
 Chain 4: </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
@@ -1189,8 +1089,8 @@ Start sampling</code></pre>
 <pre><code>
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
 Chain 1: 
-Chain 1: Gradient evaluation took 5.4e-05 seconds
-Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.54 seconds.
+Chain 1: Gradient evaluation took 0.000102 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 1.02 seconds.
 Chain 1: Adjust your expectations accordingly!
 Chain 1: 
 Chain 1: 
@@ -1207,15 +1107,15 @@ Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 1: 
-Chain 1:  Elapsed Time: 0.289 seconds (Warm-up)
-Chain 1:                0.222 seconds (Sampling)
-Chain 1:                0.511 seconds (Total)
+Chain 1:  Elapsed Time: 0.265 seconds (Warm-up)
+Chain 1:                0.19 seconds (Sampling)
+Chain 1:                0.455 seconds (Total)
 Chain 1: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
 Chain 2: 
-Chain 2: Gradient evaluation took 3.6e-05 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
+Chain 2: Gradient evaluation took 4.2e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.42 seconds.
 Chain 2: Adjust your expectations accordingly!
 Chain 2: 
 Chain 2: 
@@ -1232,15 +1132,15 @@ Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
-Chain 2:  Elapsed Time: 0.265 seconds (Warm-up)
-Chain 2:                0.23 seconds (Sampling)
-Chain 2:                0.495 seconds (Total)
+Chain 2:  Elapsed Time: 0.253 seconds (Warm-up)
+Chain 2:                0.202 seconds (Sampling)
+Chain 2:                0.455 seconds (Total)
 Chain 2: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
 Chain 3: 
-Chain 3: Gradient evaluation took 3.9e-05 seconds
-Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.39 seconds.
+Chain 3: Gradient evaluation took 0.000117 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 1.17 seconds.
 Chain 3: Adjust your expectations accordingly!
 Chain 3: 
 Chain 3: 
@@ -1257,15 +1157,15 @@ Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 3: 
-Chain 3:  Elapsed Time: 0.288 seconds (Warm-up)
-Chain 3:                0.219 seconds (Sampling)
-Chain 3:                0.507 seconds (Total)
+Chain 3:  Elapsed Time: 0.248 seconds (Warm-up)
+Chain 3:                0.22 seconds (Sampling)
+Chain 3:                0.468 seconds (Total)
 Chain 3: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 3.6e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
+Chain 4: Gradient evaluation took 0.000114 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 1.14 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -1282,9 +1182,9 @@ Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 4: 
-Chain 4:  Elapsed Time: 0.232 seconds (Warm-up)
-Chain 4:                0.188 seconds (Sampling)
-Chain 4:                0.42 seconds (Total)
+Chain 4:  Elapsed Time: 0.259 seconds (Warm-up)
+Chain 4:                0.2 seconds (Sampling)
+Chain 4:                0.459 seconds (Total)
 Chain 4: </code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
@@ -1313,15 +1213,15 @@ Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 1: 
-Chain 1:  Elapsed Time: 0.303 seconds (Warm-up)
-Chain 1:                0.207 seconds (Sampling)
-Chain 1:                0.51 seconds (Total)
+Chain 1:  Elapsed Time: 0.225 seconds (Warm-up)
+Chain 1:                0.232 seconds (Sampling)
+Chain 1:                0.457 seconds (Total)
 Chain 1: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
 Chain 2: 
-Chain 2: Gradient evaluation took 2.9e-05 seconds
-Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.29 seconds.
+Chain 2: Gradient evaluation took 4.2e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.42 seconds.
 Chain 2: Adjust your expectations accordingly!
 Chain 2: 
 Chain 2: 
@@ -1338,9 +1238,115 @@ Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 2: 
-Chain 2:  Elapsed Time: 0.236 seconds (Warm-up)
-Chain 2:                0.187 seconds (Sampling)
-Chain 2:                0.423 seconds (Total)
+Chain 2:  Elapsed Time: 0.262 seconds (Warm-up)
+Chain 2:                0.194 seconds (Sampling)
+Chain 2:                0.456 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 3.6e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.36 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 0.245 seconds (Warm-up)
+Chain 3:                0.205 seconds (Sampling)
+Chain 3:                0.45 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 3e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.3 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 0.239 seconds (Warm-up)
+Chain 4:                0.214 seconds (Sampling)
+Chain 4:                0.453 seconds (Total)
+Chain 4: </code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Compiling Stan program...
+Start sampling</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 4.9e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.49 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 0.263 seconds (Warm-up)
+Chain 1:                0.199 seconds (Sampling)
+Chain 1:                0.462 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 3e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.3 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 0.276 seconds (Warm-up)
+Chain 2:                0.198 seconds (Sampling)
+Chain 2:                0.474 seconds (Total)
 Chain 2: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
@@ -1363,15 +1369,15 @@ Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 3: 
-Chain 3:  Elapsed Time: 0.354 seconds (Warm-up)
-Chain 3:                0.219 seconds (Sampling)
-Chain 3:                0.573 seconds (Total)
+Chain 3:  Elapsed Time: 0.247 seconds (Warm-up)
+Chain 3:                0.243 seconds (Sampling)
+Chain 3:                0.49 seconds (Total)
 Chain 3: 
 
 SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
 Chain 4: 
-Chain 4: Gradient evaluation took 2.9e-05 seconds
-Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.29 seconds.
+Chain 4: Gradient evaluation took 8.2e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.82 seconds.
 Chain 4: Adjust your expectations accordingly!
 Chain 4: 
 Chain 4: 
@@ -1388,9 +1394,244 @@ Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
 Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
 Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
 Chain 4: 
-Chain 4:  Elapsed Time: 0.259 seconds (Warm-up)
-Chain 4:                0.201 seconds (Sampling)
-Chain 4:                0.46 seconds (Total)
+Chain 4:  Elapsed Time: 0.272 seconds (Warm-up)
+Chain 4:                0.195 seconds (Sampling)
+Chain 4:                0.467 seconds (Total)
+Chain 4: </code></pre>
+</div>
+</div>
+</section>
+</section>
+<section id="null-models" class="level2">
+<h2 class="anchored" data-anchor-id="null-models">Null models</h2>
+<section id="glm" class="level3">
+<h3 class="anchored" data-anchor-id="glm">GLM</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a>null.glm <span class="ot">&lt;-</span> <span class="fu">glm</span>(flow<span class="fl">.2023</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> model_data_noNAs,</span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+<section id="gwpr-1" class="level3">
+<h3 class="anchored" data-anchor-id="gwpr-1">GWPR</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb37"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a>abw <span class="ot">&lt;-</span> <span class="fu">bw.ggwr</span>(</span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">formula =</span> flow<span class="fl">.2023</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> model_data_noNAs_sp,</span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">"poisson"</span>,</span>
+<span id="cb37-5"><a href="#cb37-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">approach =</span> <span class="st">"AICc"</span>,</span>
+<span id="cb37-6"><a href="#cb37-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">kernel =</span> <span class="st">"bisquare"</span>,</span>
+<span id="cb37-7"><a href="#cb37-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">adaptive =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb37-8"><a href="#cb37-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">dMat =</span> dMat</span>
+<span id="cb37-9"><a href="#cb37-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Iteration    Log-Likelihood(With bandwidth:  89 )
+=========================
+       0      -1.413e+05 
+       1      -1.333e+05 
+       2      -1.334e+05 
+       3      -1.333e+05 
+       4      -1.333e+05 
+       5      -1.333e+05 
+Adaptive bandwidth (number of nearest neighbours): 89 AICc value: 266536 
+ Iteration    Log-Likelihood(With bandwidth:  63 )
+=========================
+       0      -1.39e+05 
+       1      -1.296e+05 
+       2      -1.299e+05 
+       3      -1.297e+05 
+       4      -1.297e+05 
+       5      -1.297e+05 
+Adaptive bandwidth (number of nearest neighbours): 63 AICc value: 259472.8 
+ Iteration    Log-Likelihood(With bandwidth:  45 )
+=========================
+       0      -1.367e+05 
+       1      -1.267e+05 
+       2      -1.267e+05 
+       3      -1.265e+05 
+       4      -1.265e+05 
+       5      -1.265e+05 
+Adaptive bandwidth (number of nearest neighbours): 45 AICc value: 253087.6 
+ Iteration    Log-Likelihood(With bandwidth:  36 )
+=========================
+       0      -1.324e+05 
+       1      -1.217e+05 
+       2      -1.219e+05 
+       3      -1.217e+05 
+       4      -1.217e+05 
+       5      -1.217e+05 
+Adaptive bandwidth (number of nearest neighbours): 36 AICc value: 243486.9 
+ Iteration    Log-Likelihood(With bandwidth:  28 )
+=========================
+       0      -1.28e+05 
+       1      -1.136e+05 
+       2      -1.145e+05 
+       3      -1.143e+05 
+       4      -1.143e+05 
+       5      -1.143e+05 
+Adaptive bandwidth (number of nearest neighbours): 28 AICc value: 228677.5 
+ Iteration    Log-Likelihood(With bandwidth:  25 )
+=========================
+       0      -1.268e+05 
+       1      -1.113e+05 
+       2      -1.123e+05 
+       3      -1.122e+05 
+       4      -1.122e+05 
+       5      -1.122e+05 
+Adaptive bandwidth (number of nearest neighbours): 25 AICc value: 224351.3 
+ Iteration    Log-Likelihood(With bandwidth:  21 )
+=========================
+       0      -1.247e+05 
+       1      -1.08e+05 
+       2      -1.092e+05 
+       3      -1.091e+05 
+       4      -1.091e+05 
+       5      -1.091e+05 
+Adaptive bandwidth (number of nearest neighbours): 21 AICc value: 218188.9 
+ Iteration    Log-Likelihood(With bandwidth:  21 )
+=========================
+       0      -1.247e+05 
+       1      -1.08e+05 
+       2      -1.092e+05 
+       3      -1.091e+05 
+       4      -1.091e+05 
+       5      -1.091e+05 
+Adaptive bandwidth (number of nearest neighbours): 21 AICc value: 218188.9 </code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb39"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb39-1"><a href="#cb39-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit GWPR</span></span>
+<span id="cb39-2"><a href="#cb39-2" aria-hidden="true" tabindex="-1"></a>null.gwpr <span class="ot">&lt;-</span> <span class="fu">ggwr.basic</span>(</span>
+<span id="cb39-3"><a href="#cb39-3" aria-hidden="true" tabindex="-1"></a>  flow<span class="fl">.2023</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb39-4"><a href="#cb39-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">data =</span> model_data_noNAs_sp,</span>
+<span id="cb39-5"><a href="#cb39-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">family =</span> <span class="st">"poisson"</span>,</span>
+<span id="cb39-6"><a href="#cb39-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">bw =</span> abw,</span>
+<span id="cb39-7"><a href="#cb39-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">kernel =</span> <span class="st">"bisquare"</span>,</span>
+<span id="cb39-8"><a href="#cb39-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">adaptive =</span> <span class="cn">TRUE</span>,</span>
+<span id="cb39-9"><a href="#cb39-9" aria-hidden="true" tabindex="-1"></a>  <span class="at">dMat =</span> dMat</span>
+<span id="cb39-10"><a href="#cb39-10" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code> Iteration    Log-Likelihood
+=========================
+       0      -1.247e+05 
+       1      -1.08e+05 
+       2      -1.092e+05 
+       3      -1.091e+05 
+       4      -1.091e+05 
+       5      -1.091e+05 </code></pre>
+</div>
+</div>
+</section>
+<section id="bayesian" class="level3">
+<h3 class="anchored" data-anchor-id="bayesian">Bayesian</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a>null.bnb <span class="ot">&lt;-</span> <span class="fu">brm</span>(flow<span class="fl">.2023</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
+<span id="cb41-2"><a href="#cb41-2" aria-hidden="true" tabindex="-1"></a>                <span class="at">data =</span> model_data_noNAs,</span>
+<span id="cb41-3"><a href="#cb41-3" aria-hidden="true" tabindex="-1"></a>                <span class="at">family =</span> <span class="fu">negbinomial</span>())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Compiling Stan program...</code></pre>
+</div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Start sampling</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 1).
+Chain 1: 
+Chain 1: Gradient evaluation took 9.1e-05 seconds
+Chain 1: 1000 transitions using 10 leapfrog steps per transition would take 0.91 seconds.
+Chain 1: Adjust your expectations accordingly!
+Chain 1: 
+Chain 1: 
+Chain 1: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 1: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 1: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 1: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 1: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 1: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 1: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 1: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 1: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 1: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 1: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 1: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 1: 
+Chain 1:  Elapsed Time: 0.229 seconds (Warm-up)
+Chain 1:                0.159 seconds (Sampling)
+Chain 1:                0.388 seconds (Total)
+Chain 1: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 2).
+Chain 2: 
+Chain 2: Gradient evaluation took 4.1e-05 seconds
+Chain 2: 1000 transitions using 10 leapfrog steps per transition would take 0.41 seconds.
+Chain 2: Adjust your expectations accordingly!
+Chain 2: 
+Chain 2: 
+Chain 2: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 2: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 2: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 2: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 2: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 2: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 2: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 2: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 2: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 2: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 2: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 2: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 2: 
+Chain 2:  Elapsed Time: 0.161 seconds (Warm-up)
+Chain 2:                0.15 seconds (Sampling)
+Chain 2:                0.311 seconds (Total)
+Chain 2: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 3).
+Chain 3: 
+Chain 3: Gradient evaluation took 8.8e-05 seconds
+Chain 3: 1000 transitions using 10 leapfrog steps per transition would take 0.88 seconds.
+Chain 3: Adjust your expectations accordingly!
+Chain 3: 
+Chain 3: 
+Chain 3: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 3: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 3: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 3: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 3: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 3: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 3: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 3: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 3: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 3: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 3: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 3: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 3: 
+Chain 3:  Elapsed Time: 0.226 seconds (Warm-up)
+Chain 3:                0.142 seconds (Sampling)
+Chain 3:                0.368 seconds (Total)
+Chain 3: 
+
+SAMPLING FOR MODEL 'anon_model' NOW (CHAIN 4).
+Chain 4: 
+Chain 4: Gradient evaluation took 5e-05 seconds
+Chain 4: 1000 transitions using 10 leapfrog steps per transition would take 0.5 seconds.
+Chain 4: Adjust your expectations accordingly!
+Chain 4: 
+Chain 4: 
+Chain 4: Iteration:    1 / 2000 [  0%]  (Warmup)
+Chain 4: Iteration:  200 / 2000 [ 10%]  (Warmup)
+Chain 4: Iteration:  400 / 2000 [ 20%]  (Warmup)
+Chain 4: Iteration:  600 / 2000 [ 30%]  (Warmup)
+Chain 4: Iteration:  800 / 2000 [ 40%]  (Warmup)
+Chain 4: Iteration: 1000 / 2000 [ 50%]  (Warmup)
+Chain 4: Iteration: 1001 / 2000 [ 50%]  (Sampling)
+Chain 4: Iteration: 1200 / 2000 [ 60%]  (Sampling)
+Chain 4: Iteration: 1400 / 2000 [ 70%]  (Sampling)
+Chain 4: Iteration: 1600 / 2000 [ 80%]  (Sampling)
+Chain 4: Iteration: 1800 / 2000 [ 90%]  (Sampling)
+Chain 4: Iteration: 2000 / 2000 [100%]  (Sampling)
+Chain 4: 
+Chain 4:  Elapsed Time: 0.165 seconds (Warm-up)
+Chain 4:                0.126 seconds (Sampling)
+Chain 4:                0.291 seconds (Total)
 Chain 4: </code></pre>
 </div>
 </div>
@@ -1399,10 +1640,13 @@ Chain 4: </code></pre>
 <section id="saving-the-data" class="level2">
 <h2 class="anchored" data-anchor-id="saving-the-data">Saving the data</h2>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb36"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(GLM_models,</span>
-<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>     GWPR_models,</span>
-<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>     Bayes_NBin_models,</span>
-<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a>     <span class="at">file =</span> <span class="st">"03_preprocessing_files/fitted_models.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb45"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb45-1"><a href="#cb45-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(GLM_models,</span>
+<span id="cb45-2"><a href="#cb45-2" aria-hidden="true" tabindex="-1"></a>     GWPR_models,</span>
+<span id="cb45-3"><a href="#cb45-3" aria-hidden="true" tabindex="-1"></a>     Bayes_NBin_models,</span>
+<span id="cb45-4"><a href="#cb45-4" aria-hidden="true" tabindex="-1"></a>     null.glm,</span>
+<span id="cb45-5"><a href="#cb45-5" aria-hidden="true" tabindex="-1"></a>     null.gwpr,</span>
+<span id="cb45-6"><a href="#cb45-6" aria-hidden="true" tabindex="-1"></a>     null.bnb,</span>
+<span id="cb45-7"><a href="#cb45-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">file =</span> <span class="st">"03_preprocessing_files/fitted_models.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 
 

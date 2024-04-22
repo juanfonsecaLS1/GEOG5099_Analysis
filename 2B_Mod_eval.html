@@ -247,6 +247,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <li><a href="#glm" id="toc-glm" class="nav-link" data-scroll-target="#glm">GLM</a></li>
   <li><a href="#gwr" id="toc-gwr" class="nav-link" data-scroll-target="#gwr">GWR</a></li>
   <li><a href="#bayes-model" id="toc-bayes-model" class="nav-link" data-scroll-target="#bayes-model">Bayes Model</a></li>
+  <li><a href="#null-models" id="toc-null-models" class="nav-link" data-scroll-target="#null-models">Null models</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -531,7 +532,8 @@ wk_pop_c_5       1.0029334    1.0034856
 road_density     1.0159417    1.0167308</code></pre>
 </div>
 </div>
-<p>RMSE</p>
+<section id="rmse" class="level4">
+<h4 class="anchored" data-anchor-id="rmse">RMSE</h4>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>GLM_RMSE <span class="ot">&lt;-</span> <span class="fu">vapply</span>(</span>
 <span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  GLM_models,</span>
@@ -540,34 +542,26 @@ road_density     1.0159417    1.0167308</code></pre>
 <span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  },</span>
 <span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>AICc</p>
-<p>null model to compare AICc of fitted models</p>
+</section>
+<section id="aicc" class="level4">
+<h4 class="anchored" data-anchor-id="aicc">AICc</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>null.m <span class="ot">&lt;-</span> <span class="fu">glm</span>(flow<span class="fl">.2023</span> <span class="sc">~</span> <span class="dv">1</span>,</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>              <span class="at">data =</span> model_data_noNAs,</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>              <span class="at">family =</span> <span class="fu">poisson</span>())</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># AICc for null model</span></span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">extractAIC</span>(null.m)[<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 294891.4</code></pre>
+<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>GLM_AICc <span class="ot">&lt;-</span> <span class="fu">vapply</span>(GLM_models,</span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">function</span>(mymodel) {</span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">extractAIC</span>(mymodel)[<span class="dv">2</span>]</span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>                   },</span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">numeric</span>(<span class="dv">1</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>GLM_AICc <span class="ot">&lt;-</span> <span class="fu">vapply</span>(GLM_models,</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">function</span>(mymodel) {</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">extractAIC</span>(mymodel)[<span class="dv">2</span>]</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>                   },</span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">numeric</span>(<span class="dv">1</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
+</section>
 </section>
 <section id="gwr" class="level3">
 <h3 class="anchored" data-anchor-id="gwr">GWR</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(GWPR_models,</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>         <span class="co"># table of GWR coefficients</span></span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>         t1 <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">apply</span>(mymodel<span class="sc">$</span>SDF<span class="sc">@</span>data[, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="dv">2</span>, summary)) <span class="sc">|&gt;</span> <span class="fu">t</span>()</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>       })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(GWPR_models,</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>         <span class="co"># table of GWR coefficients</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>         t1 <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">apply</span>(mymodel<span class="sc">$</span>SDF<span class="sc">@</span>data[, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="dv">2</span>, summary)) <span class="sc">|&gt;</span> <span class="fu">t</span>()</span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>       })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
                      Min.      1st Qu.       Median         Mean      3rd Qu.
@@ -630,31 +624,35 @@ wk_pop_c_5    1.286138e+00
 road_density  1.185276e+00</code></pre>
 </div>
 </div>
-<p>RMSE</p>
+<section id="rmse-1" class="level4">
+<h4 class="anchored" data-anchor-id="rmse-1">RMSE</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>GWPR_RMSE <span class="ot">&lt;-</span> <span class="fu">vapply</span>(</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  GWPR_models,</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(mymodel) {</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>((mymodel<span class="sc">$</span>SDF<span class="sc">$</span>y <span class="sc">-</span> mymodel<span class="sc">$</span>SDF<span class="sc">$</span>yhat) <span class="sc">^</span> <span class="dv">2</span>) <span class="sc">^</span> <span class="fl">0.5</span></span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  },</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>GWPR_RMSE <span class="ot">&lt;-</span> <span class="fu">vapply</span>(</span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>  GWPR_models,</span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(mymodel) {</span>
+<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>((mymodel<span class="sc">$</span>SDF<span class="sc">$</span>y <span class="sc">-</span> mymodel<span class="sc">$</span>SDF<span class="sc">$</span>yhat) <span class="sc">^</span> <span class="dv">2</span>) <span class="sc">^</span> <span class="fl">0.5</span></span>
+<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>  },</span>
+<span id="cb22-6"><a href="#cb22-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<p>AICc</p>
+</section>
+<section id="aicc-1" class="level4">
+<h4 class="anchored" data-anchor-id="aicc-1">AICc</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>GWPR_AICc <span class="ot">&lt;-</span> <span class="fu">vapply</span>(GWPR_models,</span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">function</span>(mymodel) {</span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>                     mymodel<span class="sc">$</span>glms<span class="sc">$</span>aic</span>
-<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>                   },</span>
-<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">numeric</span>(<span class="dv">1</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>GWPR_AICc <span class="ot">&lt;-</span> <span class="fu">vapply</span>(GWPR_models,</span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">function</span>(mymodel) {</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                     mymodel<span class="sc">$</span>glms<span class="sc">$</span>aic</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                   },</span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">numeric</span>(<span class="dv">1</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
+</section>
 </section>
 <section id="bayes-model" class="level3">
 <h3 class="anchored" data-anchor-id="bayes-model">Bayes Model</h3>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(Bayes_NBin_models,</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>         <span class="fu">summary</span>(mymodel)</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>       })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(Bayes_NBin_models,</span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>         <span class="fu">summary</span>(mymodel)</span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>       })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>[[1]]
  Family: negbinomial 
@@ -666,14 +664,14 @@ Formula: flow.2023 ~ total_pop_c_1 + wk_pop_c_1 + road_density
 
 Regression Coefficients:
               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         8.49      0.26     7.98     9.00 1.00     4913     3325
-total_pop_c_1    -0.11      0.04    -0.19    -0.03 1.00     4791     3032
-wk_pop_c_1        0.06      0.06    -0.05     0.17 1.00     4794     3244
-road_density      0.02      0.01     0.00     0.04 1.00     4918     3294
+Intercept         8.49      0.26     8.00     9.01 1.00     5615     2980
+total_pop_c_1    -0.11      0.04    -0.19    -0.04 1.00     4539     3012
+wk_pop_c_1        0.06      0.06    -0.05     0.18 1.00     5070     3188
+road_density      0.02      0.01     0.00     0.04 1.00     5470     2925
 
 Further Distributional Parameters:
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     2.71      0.32     2.13     3.37 1.00     4578     2811
+shape     2.71      0.32     2.11     3.38 1.00     4481     2761
 
 Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -689,14 +687,14 @@ Formula: flow.2023 ~ total_pop_c_2 + wk_pop_c_2 + road_density
 
 Regression Coefficients:
               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         8.53      0.27     8.00     9.06 1.00     4546     3145
-total_pop_c_2    -0.03      0.01    -0.06    -0.01 1.00     4723     3012
-wk_pop_c_2        0.02      0.02    -0.02     0.06 1.00     4429     3217
-road_density      0.02      0.01     0.00     0.04 1.00     4401     3382
+Intercept         8.53      0.26     8.02     9.07 1.00     4962     2910
+total_pop_c_2    -0.03      0.01    -0.06    -0.01 1.00     5010     3437
+wk_pop_c_2        0.02      0.02    -0.02     0.06 1.00     4562     3011
+road_density      0.02      0.01     0.00     0.04 1.00     4600     3273
 
 Further Distributional Parameters:
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     2.68      0.31     2.12     3.33 1.00     4446     3107
+shape     2.69      0.31     2.12     3.35 1.00     4626     3195
 
 Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -712,14 +710,14 @@ Formula: flow.2023 ~ total_pop_c_3 + wk_pop_c_3 + road_density
 
 Regression Coefficients:
               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         8.64      0.33     7.99     9.33 1.00     4363     2964
-total_pop_c_3    -0.02      0.01    -0.03    -0.00 1.00     4523     2957
-wk_pop_c_3        0.01      0.01    -0.02     0.03 1.00     5074     3225
-road_density      0.02      0.01     0.00     0.04 1.00     3939     3214
+Intercept         8.63      0.34     7.97     9.28 1.00     4645     3054
+total_pop_c_3    -0.02      0.01    -0.03    -0.00 1.00     4522     3036
+wk_pop_c_3        0.01      0.01    -0.02     0.03 1.00     4754     2933
+road_density      0.02      0.01     0.00     0.04 1.00     4706     3071
 
 Further Distributional Parameters:
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     2.65      0.31     2.07     3.29 1.00     4738     3300
+shape     2.63      0.32     2.06     3.29 1.00     4534     2790
 
 Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -735,14 +733,14 @@ Formula: flow.2023 ~ total_pop_c_4 + wk_pop_c_4 + road_density
 
 Regression Coefficients:
               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         8.72      0.40     7.95     9.50 1.00     4325     3127
-total_pop_c_4    -0.01      0.01    -0.03     0.00 1.00     4444     3160
-wk_pop_c_4        0.01      0.01    -0.01     0.02 1.00     4769     3007
-road_density      0.02      0.01    -0.00     0.04 1.00     4186     3042
+Intercept         8.72      0.41     7.95     9.53 1.00     4223     2941
+total_pop_c_4    -0.01      0.01    -0.03     0.00 1.00     4537     3230
+wk_pop_c_4        0.01      0.01    -0.01     0.02 1.00     4447     2959
+road_density      0.02      0.01    -0.00     0.03 1.00     4206     2433
 
 Further Distributional Parameters:
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     2.63      0.31     2.05     3.29 1.00     4449     3141
+shape     2.64      0.31     2.08     3.28 1.00     4353     3181
 
 Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
@@ -758,22 +756,48 @@ Formula: flow.2023 ~ total_pop_c_5 + wk_pop_c_5 + road_density
 
 Regression Coefficients:
               Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-Intercept         8.70      0.47     7.80     9.64 1.00     4580     3488
-total_pop_c_5    -0.01      0.01    -0.02     0.00 1.00     4725     3096
-wk_pop_c_5        0.00      0.01    -0.01     0.02 1.00     4710     2821
-road_density      0.02      0.01    -0.00     0.04 1.00     4104     2806
+Intercept         8.69      0.48     7.79     9.66 1.00     4579     3056
+total_pop_c_5    -0.01      0.01    -0.02     0.00 1.00     4206     3191
+wk_pop_c_5        0.00      0.01    -0.01     0.02 1.00     5405     3383
+road_density      0.02      0.01    -0.00     0.04 1.00     4272     2873
 
 Further Distributional Parameters:
       Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
-shape     2.60      0.31     2.03     3.25 1.00     4419     2947
+shape     2.60      0.30     2.04     3.23 1.00     4334     2421
 
 Draws were sampled using sampling(NUTS). For each parameter, Bulk_ESS
 and Tail_ESS are effective sample size measures, and Rhat is the potential
 scale reduction factor on split chains (at convergence, Rhat = 1).</code></pre>
 </div>
 </div>
+</section>
+<section id="null-models" class="level3">
+<h3 class="anchored" data-anchor-id="null-models">Null models</h3>
+<p>null model to compare with fitted models</p>
+<section id="glm-1" class="level4">
+<h4 class="anchored" data-anchor-id="glm-1">GLM</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="fu">extractAIC</span>(null.glm)[<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 294891.4</code></pre>
+</div>
+</div>
+</section>
+<section id="gwpr" class="level4">
+<h4 class="anchored" data-anchor-id="gwpr">GWPR</h4>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co"># AICc for null GWR model</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a>null.gwpr<span class="sc">$</span>glms<span class="sc">$</span>aic</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 293493.6</code></pre>
+</div>
+</div>
+</section>
+<section id="bayesian-negative-binomial" class="level4">
+<h4 class="anchored" data-anchor-id="bayesian-negative-binomial">Bayesian Negative binomial</h4>
 
 
+</section>
 </section>
 </section>
 
