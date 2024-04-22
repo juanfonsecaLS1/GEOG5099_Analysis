@@ -118,12 +118,57 @@ Bayes_NBin_models <- lapply(
 )
 ```
 
+
+## Null models
+
+### GLM
+```{r}
+null.glm <- glm(flow.2023 ~ 1,
+              data = model_data_noNAs,
+              family = poisson())
+```
+
+### GWPR
+```{r}
+abw <- bw.ggwr(
+  formula = flow.2023 ~ 1,
+  data = model_data_noNAs_sp,
+  family = "poisson",
+  approach = "AICc",
+  kernel = "bisquare",
+  adaptive = TRUE,
+  dMat = dMat
+)
+# Fit GWPR
+null.gwpr <- ggwr.basic(
+  flow.2023 ~ 1,
+  data = model_data_noNAs_sp,
+  family = "poisson",
+  bw = abw,
+  kernel = "bisquare",
+  adaptive = TRUE,
+  dMat = dMat
+)
+```
+
+
+### Bayesian
+```{r}
+null.bnb <- brm(flow.2023 ~ 1,
+                data = model_data_noNAs,
+                family = negbinomial())
+```
+
+
 ## Saving the data
 
 ```{r}
 save(GLM_models,
      GWPR_models,
      Bayes_NBin_models,
+     null.glm,
+     null.gwpr,
+     null.bnb,
      file = "03_preprocessing_files/fitted_models.RData")
 ```
 

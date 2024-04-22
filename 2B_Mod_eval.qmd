@@ -9,6 +9,7 @@ library(tidyverse)
 library(broom)
 library(GWmodel)
 library(brms)
+library(sf)
 ```
 
 ## Load model data
@@ -16,6 +17,14 @@ library(brms)
 ### Data
 ```{r}
 model_data_expanded <- st_read("03_preprocessing_files/model_data.gpkg")
+model_data_noNAs<- model_data_expanded |> 
+  select(flow.2022,
+         flow.2023,
+         centrality,
+         car_avail_perc,
+         total_pop_c_1:wk_pop_c_5,
+         road_density) |>
+  drop_na()
 ```
 
 ### Fitted models
@@ -27,7 +36,6 @@ load("03_preprocessing_files/fitted_models.RData")
 ## Model Evaluation
 
 ### GLM
-
 ```{r}
 lapply(GLM_models,
        function(mymodel){
@@ -45,7 +53,7 @@ lapply(GLM_models,
        })
 ```
 
-RMSE
+#### RMSE
 ```{r}
 GLM_RMSE <- vapply(
   GLM_models,
@@ -55,18 +63,7 @@ GLM_RMSE <- vapply(
   numeric(1))
 ```
 
-AICc
-
-null model to compare AICc of fitted models
-```{r}
-null.m <- glm(flow.2023 ~ 1,
-              data = model_data_noNAs,
-              family = poisson())
-# AICc for null model
-extractAIC(null.m)[2]
-```
-
-
+#### AICc
 ```{r}
 GLM_AICc <- vapply(GLM_models,
                    function(mymodel) {
@@ -87,7 +84,7 @@ lapply(GWPR_models,
 ```
 
 
-RMSE
+#### RMSE
 ```{r}
 GWPR_RMSE <- vapply(
   GWPR_models,
@@ -98,7 +95,7 @@ GWPR_RMSE <- vapply(
 ```
 
 
-AICc
+#### AICc
 ```{r}
 GWPR_AICc <- vapply(GWPR_models,
                    function(mymodel) {
@@ -117,8 +114,26 @@ lapply(Bayes_NBin_models,
 ```
 
 
+
+
+### Null models
+null model to compare with fitted models
+
+#### GLM
+```{r}
+extractAIC(null.glm)[2]
+```
+
+#### GWPR
+```{r}
+# AICc for null GWR model
+null.gwpr$glms$aic
+```
+
+#### Bayesian Negative binomial
 ```{r}
 
 ```
+
 
 

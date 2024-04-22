@@ -35,7 +35,7 @@ website:
       - text: "---"
       - section: "Modelling"
         contents:
-          - 2A_Mod_fit_val.qmd
+          - 2A_Mod_fit.qmd
           - 2B_Mod_eval.qmd
 format:
   html:
