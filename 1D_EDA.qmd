@@ -1,0 +1,258 @@
+---
+title: "Data Consolidation and Exploration"
+author: "Juan Fonseca"
+format: html
+---
+
+```{r libraries, message=FALSE,warning=FALSE}
+library(tidyverse)
+library(kableExtra)
+library(hrbrthemes)
+library(tmap)
+library(sf)
+```
+
+## Loading data
+
+```{r data_load}
+net_data_sf <- st_read("03_preprocessing_files/network_data.gpkg", layer = "network_data")
+LSOA_sf <- st_read("03_preprocessing_files/network_data.gpkg", layer = "LSOA")
+jct_sf <- st_read("03_preprocessing_files/network_data.gpkg", layer = "junctions")
+
+bounds_model <- st_read("03_preprocessing_files/bounds_model.geoJSON")
+
+LSOA_data <- LSOA_sf |> st_drop_geometry()
+```
+
+LSOA data is joined with the network data. Also, total population and total
+people employed are scaled based on the length proportion calculated before. Road type is converted to factor
+
+## Joinig LSOA data and network data
+
+```{r subset_data}
+model_data_sf <- net_data_sf[bounds_model,] |>
+  left_join(LSOA_data |>select(
+                LSOA21CD,
+                total_pop,
+                total_employed,
+                wk_pop,
+                car_avail_perc,
+                road_density,
+                cars_percap_2018,
+                area_km2
+              ) |>
+              rename(total_emp_pop = total_employed),
+            by = join_by(LSOA21CD)) |>
+  mutate(across(total_pop:wk_pop,
+                \(x) x * portion_lsoa))
+```
+
+A version without the geometry of the dataset
+
+```{r drop_geom}
+model_data <- model_data_sf |>
+  sf::st_drop_geometry() 
+```
+
+## Exploration
+
+### Sample size
+Extracting sample size based on the number of monitored edges
+```{r table_counts}
+model_data |>
+  mutate(bool.flow.2023 = !is.na(flow.2023)) |> 
+  summarise(n_edges = n(),.by = c(bool.flow.2023,road_type)) |>
+  mutate(sample_size = n_edges/sum(n_edges),
+         .by = road_type) |> 
+  filter(bool.flow.2023) |> 
+  select(road_type,sample_size) |> 
+  mutate(sample_size = scales::percent(sample_size)) |> 
+  kable(digits = 2) |> 
+  kable_minimal() |> 
+  kable_paper()
+```
+
+Same analysis with km of build roads (%)
+```{r}
+model_data |>
+  mutate(bool.flow.2023 = !is.na(flow.2023)) |> 
+  summarise(d_edges = sum(d),.by = c(bool.flow.2023,road_type)) |>
+  mutate(sample_size = d_edges/sum(d_edges),
+         .by = road_type) |> 
+  filter(bool.flow.2023) |> 
+  select(road_type,sample_size) |> 
+  mutate(sample_size = scales::percent(sample_size)) |> 
+  kable(digits = 2) |> 
+  kable_minimal() |> 
+  kable_paper()
+```
+
+Analysis of junction types with flows
+```{r}
+jct_sf|>
+  sf::st_drop_geometry() |> 
+  mutate(bool.flow.2023 = !is.na(flow.2023)) |> 
+  summarise(n_jct = n(),.by = c(bool.flow.2023,jct_type)) |>
+  mutate(sample_size = n_jct/sum(n_jct),
+         .by = jct_type) |> 
+  filter(bool.flow.2023) |> 
+  select(jct_type,sample_size) |> mutate(sample_size = scales::percent(sample_size)) |> 
+  kable(digits = 2) |> 
+  kable_minimal() |> 
+  kable_paper()
+```
+
+### Correlation between flows and some of the variables
+
+Centrality vs Flows
+```{r}
+model_data |> 
+  ggplot(aes(x=std.centrality,y=flow.2023,col=road_type))+
+  geom_point()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+Pop with car availability vs flow
+```{r}
+model_data |> 
+  ggplot(aes(x=(total_pop*car_avail_perc),
+             y=flow.2023,
+             col=road_type))+
+  geom_point()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+Employed Pop with car availability vs flow
+```{r}
+model_data |> 
+  ggplot(aes(x=(total_emp_pop*car_avail_perc),
+             y=flow.2023,
+             col=road_type))+
+  geom_point()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+Workplace Pop vs flow
+```{r}
+model_data |> 
+  ggplot(aes(x=wk_pop,
+             y=flow.2023,
+             col=road_type))+
+  geom_point()+
+  scale_x_log10()+
+  geom_smooth(method = "lm",se = F)+
+  theme_ipsum_rc()
+```
+
+### Catchment of each node
+
+Alternatively, population and jobs  serviced can be used as as per Selby 2011. Using population and jobs served within specific distances. For this purpose, the catchmets are loaded
+
+```{r}
+isochrones <- read_csv("03_preprocessing_files/junctions_catchment.csv")
+```
+
+This iterates through all origin nodes and calculates the total population and jobs for each time band
+
+```{r}
+consolidated_catchment <- isochrones |>
+  mutate(id = as.character(id)) |> 
+  left_join(model_data |>
+              select(to_id, total_pop, total_emp_pop, wk_pop),
+            by=c("id"="to_id"),
+            relationship = "many-to-many") |> 
+  summarise(across(ends_with("pop"),
+                   \(x) sum(x,na.rm = T)),
+            .by = c(from,tlim)) |>
+  right_join(isochrones |> 
+                 expand(from,tlim),
+             by = c("from","tlim")) |> 
+  arrange(from,tlim) |> 
+  mutate(across(ends_with("pop"),
+                   \(x) if_else(is.na(x),0,x)),
+         across(ends_with("pop"),
+                   list(c = \(x) cumsum(x))),
+            .by = from) |> 
+  select(from,tlim,ends_with("c")) |> 
+  pivot_wider(names_from = tlim,values_from = total_pop_c:wk_pop_c) |> 
+  mutate(from = as.character(from))
+
+```
+
+
+Catchment of residents within 2 minutes
+```{r}
+tmap_mode("plot")
+tm_shape(model_data_sf)+
+  tm_lines("skyblue",lwd = 0.7)+
+  tm_shape(model_data_sf |>
+  left_join(consolidated_catchment,
+            by = c("from_id"="from")) |> 
+  filter(!is.na(total_pop_c_2)))+
+  tm_lines("total_pop_c_2",lwd = 2)
+```
+
+Catchment of employed residents within 2 minutes
+```{r}
+tm_shape(model_data_sf)+
+  tm_lines("skyblue",lwd = 0.7)+
+  tm_shape(model_data_sf |>
+  left_join(consolidated_catchment,
+            by = c("from_id"="from")) |> 
+  filter(!is.na(total_emp_pop_c_2)))+
+  tm_lines("wk_pop_c_2",lwd = 2)
+```
+
+Catchment of usual workplace population
+```{r}
+tm_shape(model_data_sf)+
+  tm_lines("skyblue",lwd = 0.7)+
+  tm_shape(model_data_sf |>
+  left_join(consolidated_catchment,
+            by = c("from_id"="from")) |> 
+  filter(!is.na(wk_pop_c_2)))+
+  tm_lines("wk_pop_c_2",lwd = 2)
+```
+
+## Consolidating the dataset for model fitting
+
+Joining the catchment to the `model_data` dataset
+
+```{r}
+model_data_expanded <- model_data_sf |>
+  left_join(consolidated_catchment,
+            by = c("from_id"="from")) |>
+  select(edge_id,
+         flow.2022,
+         flow.2023,
+         centrality,
+         car_avail_perc,
+         total_pop_c_1:wk_pop_c_5,
+         road_density) |>
+  mutate(across(contains("pop"),\(x) x/1e3),
+         centrality = centrality/1e6,
+         across(starts_with("flow."),\(x) round(x) |> as.integer()))
+```
+
+
+### Exploring interactions among the variables in the dataset
+
+```{r}
+model_data_expanded |>
+  st_drop_geometry() |> 
+  select(flow.2023, centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
+  drop_na(flow.2023, centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
+  # mutate(across(everything(),log)) |> 
+  GGally::ggpairs()
+```
+
+## Saving data
+```{r}
+st_write(model_data_expanded,"03_preprocessing_files/model_data.gpkg",delete_dsn = T) 
+```
+
+
+

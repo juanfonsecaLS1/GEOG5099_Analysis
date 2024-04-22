@@ -31,10 +31,12 @@ website:
           - 1A_Count_data.qmd
           - 1B_Census_data.qmd
           - 1C_Road_network.qmd
-          - 2A_EDA.qmd
+          - 1D_EDA.qmd
       - text: "---"
-      - section: "Model Fitting"
-      
+      - section: "Modelling"
+        contents:
+          - 2A_Mod_fit_val.qmd
+          - 2B_Mod_eval.qmd
 format:
   html:
     toc: true

@@ -1,0 +1,124 @@
+---
+title: "Model Evaluation"
+author: "Juan Fonseca"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(broom)
+library(GWmodel)
+library(brms)
+```
+
+## Load model data
+
+### Data
+```{r}
+model_data_expanded <- st_read("03_preprocessing_files/model_data.gpkg")
+```
+
+### Fitted models
+
+```{r}
+load("03_preprocessing_files/fitted_models.RData")
+```
+
+## Model Evaluation
+
+### GLM
+
+```{r}
+lapply(GLM_models,
+       function(mymodel){
+         summary(mymodel)
+         }
+       )
+```
+
+
+```{r}
+lapply(GLM_models,
+       function(mymodel){
+         beta <- coef(mymodel)
+         exp(confint(mymodel,level = 0.95))
+       })
+```
+
+RMSE
+```{r}
+GLM_RMSE <- vapply(
+  GLM_models,
+  function(mymodel) {
+    mean((mymodel$data$flow.2023 - mymodel$fitted.values) ^ 2) ^ 0.5
+  },
+  numeric(1))
+```
+
+AICc
+
+null model to compare AICc of fitted models
+```{r}
+null.m <- glm(flow.2023 ~ 1,
+              data = model_data_noNAs,
+              family = poisson())
+# AICc for null model
+extractAIC(null.m)[2]
+```
+
+
+```{r}
+GLM_AICc <- vapply(GLM_models,
+                   function(mymodel) {
+                     extractAIC(mymodel)[2]
+                   },
+                   numeric(1)) 
+```
+
+
+### GWR
+
+```{r}
+lapply(GWPR_models,
+       function(mymodel){
+         # table of GWR coefficients
+         t1 = exp(apply(mymodel$SDF@data[, 1:4], 2, summary)) |> t()
+       })
+```
+
+
+RMSE
+```{r}
+GWPR_RMSE <- vapply(
+  GWPR_models,
+  function(mymodel) {
+    mean((mymodel$SDF$y - mymodel$SDF$yhat) ^ 2) ^ 0.5
+  },
+  numeric(1))
+```
+
+
+AICc
+```{r}
+GWPR_AICc <- vapply(GWPR_models,
+                   function(mymodel) {
+                     mymodel$glms$aic
+                   },
+                   numeric(1)) 
+```
+
+
+### Bayes Model
+```{r}
+lapply(Bayes_NBin_models,
+       function(mymodel){
+         summary(mymodel)
+       })
+```
+
+
+```{r}
+
+```
+
+

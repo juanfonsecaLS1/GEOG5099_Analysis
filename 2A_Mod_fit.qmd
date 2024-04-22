@@ -1,0 +1,146 @@
+---
+title: "Fitting"
+author: "Juan Fonseca"
+format: html
+---
+
+```{r}
+library(sf)
+library(tidyverse)
+library(brms)
+```
+
+## Loading data
+
+```{r}
+model_data_expanded <- st_read("03_preprocessing_files/model_data.gpkg")
+```
+
+## Fitting models
+
+### GLM model
+
+```{r}
+model_data_noNAs<- model_data_expanded |> 
+  select(flow.2022,
+         flow.2023,
+         centrality,
+         car_avail_perc,
+         total_pop_c_1:wk_pop_c_5,
+         road_density) |>
+  drop_na()
+```
+
+A simple model with the centrality only for major roads
+
+```{r}
+GLM_models <- lapply(
+  1:5,
+  function(i) {
+    myformula <- as.formula(paste0(
+      "flow.2023 ~ total_pop_c_",
+      i,
+      " + wk_pop_c_",
+      i,
+      " + road_density"
+    ))
+    
+    m <- glm(myformula,
+             data = model_data_noNAs,
+             family = poisson())
+  }
+)
+```
+
+
+### GWPR
+
+```{r}
+library(GWmodel)
+
+model_data_noNAs_sp <- as(model_data_noNAs |> st_centroid(),"Spatial")
+dMat <- model_data_noNAs |> st_centroid() |> st_coordinates() |> gw.dist()
+
+GWPR_models <- lapply(
+  1:5,
+  function(i){
+    myformula <- as.formula(paste0(
+      "flow.2023 ~ total_pop_c_",
+      i,
+      " + wk_pop_c_",
+      i,
+      " + road_density"
+    ))
+    
+    # Determine the adaptive bandwidth
+    abw <- bw.ggwr(
+      formula = myformula,
+      data = model_data_noNAs_sp,
+      family = "poisson",
+      approach = "AICc",
+      kernel = "bisquare",
+      adaptive = TRUE,
+      dMat = dMat
+    )
+    # Fit GWPR
+    gwpr.m <- ggwr.basic(
+      myformula,
+      data = model_data_noNAs_sp,
+      family = "poisson",
+      bw = abw,
+      kernel = "bisquare",
+      adaptive = TRUE,
+      dMat = dMat
+    )
+    }
+  )
+```
+
+
+### Bayesian Negative Binomial regression
+```{r}
+library(brms)
+Bayes_NBin_models <- lapply(
+  1:5,
+  function(i) {
+    myformula <- as.formula(paste0(
+      "flow.2023 ~ total_pop_c_",
+      i,
+      " + wk_pop_c_",
+      i,
+      " + road_density"
+    ))
+    
+    m <- brm(myformula,
+             data = model_data_noNAs,
+             family = negbinomial())
+  }
+)
+```
+
+## Saving the data
+
+```{r}
+save(GLM_models,
+     GWPR_models,
+     Bayes_NBin_models,
+     file = "03_preprocessing_files/fitted_models.RData")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

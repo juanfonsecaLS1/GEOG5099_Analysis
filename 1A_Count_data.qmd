@@ -520,10 +520,13 @@ sf_counts_selected <- sf_counts |>
 #### Study area bounds
 
 ```{r}
-buffer_distance = max(st_distance(sf_counts,sf_counts))*0.5
+buffer_distance = max(st_distance(sf_counts,sf_counts))*0.1
+buffer_distance_exp = max(st_distance(sf_counts,sf_counts))*0.5
 library(MinorRoadTraffic)
-bounds <- sf_counts |>
+bounds_model <- sf_counts |>
   make_convex_hull(dist = buffer_distance)
+bounds <- sf_counts |>
+  make_convex_hull(dist = buffer_distance_exp)
 ```
 
 
@@ -540,4 +543,8 @@ st_write(sf_counts_selected,"03_preprocessing_files/grouped_counts.geojson",appe
 
 try(file.remove("03_preprocessing_files/bounds.geoJSON"))
 st_write(bounds,"03_preprocessing_files/bounds.geoJSON")
+
+try(file.remove("03_preprocessing_files/bounds_model.geoJSON"))
+st_write(bounds_model,"03_preprocessing_files/bounds_model.geoJSON")
+
 ```
