@@ -33,7 +33,7 @@ model_data_noNAs<- model_data_expanded |>
 load("03_preprocessing_files/fitted_models.RData")
 ```
 
-## Model Evaluation
+## Model Comparison
 
 ### GLM
 ```{r}
@@ -46,11 +46,27 @@ lapply(GLM_models,
 
 
 ```{r}
-lapply(GLM_models,
+GLM_coef <- lapply(GLM_models,
        function(mymodel){
          beta <- coef(mymodel)
          exp(confint(mymodel,level = 0.95))
        })
+GLM_coef
+```
+
+```{r}
+GLM_coef_df <- do.call(rbind,lapply(GLM_coef,\(x){
+  y <- as.data.frame(x)
+  y$id <- row.names(x)
+  y$catchment <- y |> mutate(catchid=str_extract(id,"c_\\d")) |> drop_na() |> pull(catchid) |> unique()
+  tibble(y) |> mutate(id = str_remove(id,paste0("_",catchment)))
+}))
+```
+
+```{r}
+ggplot(GLM_coef_df)+
+  geom_linerange(aes(xmin =`2.5 %`,xmax = `97.5 %`, y = catchment))+
+  facet_grid(.~id,scales = "free")
 ```
 
 #### RMSE
@@ -76,13 +92,28 @@ GLM_AICc <- vapply(GLM_models,
 ### GWR
 
 ```{r}
-lapply(GWPR_models,
-       function(mymodel){
-         # table of GWR coefficients
-         t1 = exp(apply(mymodel$SDF@data[, 1:4], 2, summary)) |> t()
-       })
+GWPR_coef <- lapply(GWPR_models,
+                    function(mymodel){
+                      # table of GWR coefficients
+                      t1 = exp(apply(mymodel$SDF@data[, 1:4], 2, summary)) |> t()
+                      })
 ```
 
+
+```{r}
+GWPR_coef_df <- do.call(rbind,lapply(GWPR_coef,\(x){
+  y <- as.data.frame(x)
+  y$id <- row.names(x)
+  y$catchment <- y |> mutate(catchid=str_extract(id,"c_\\d")) |> drop_na() |> pull(catchid) |> unique()
+  tibble(y) |> mutate(id = str_remove(id,paste0("_",catchment)))
+}))
+```
+
+```{r}
+ggplot(GWPR_coef_df)+
+  geom_linerange(aes(xmin =`1st Qu.`,xmax = `3rd Qu.`, y = catchment))+
+  facet_grid(.~id,scales = "free")
+```
 
 #### RMSE
 ```{r}
@@ -107,14 +138,16 @@ GWPR_AICc <- vapply(GWPR_models,
 
 ### Bayes Model
 ```{r}
+library(posterior)
 lapply(Bayes_NBin_models,
        function(mymodel){
-         summary(mymodel)
+         mymodel |> as_draws_array() |> summarise_draws()
        })
 ```
 
-
-
+```{r}
+lapply(Bayes_NBin_models,plot)
+```
 
 ### Null models
 null model to compare with fitted models

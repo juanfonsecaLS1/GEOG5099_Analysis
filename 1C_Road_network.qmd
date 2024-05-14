@@ -383,8 +383,10 @@ tm_shape(lsoa_data_density2)+
 
 The values of centrality calculated before are scaled dividing by the maximum value
 ```{r centrality_scaling}
+npoints <- dodgr_vertices(graph_c1) |> count(component) |> pull(n)
+
 graph_sf_centrality <- graph_sf_flows |>
-  mutate(std.centrality = centrality/max(centrality,na.rm = T))
+  mutate(std.centrality = centrality/((npoints-1)*(npoints-2)))
 ```
 
 
