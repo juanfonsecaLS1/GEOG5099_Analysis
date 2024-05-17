@@ -311,12 +311,13 @@ It will be assumed that the length of each road will be proportional to the popu
 
 ```{r lsoa_to_roads}
 edge_lsoa <- graph_sf_flows |>
-  select(edge_id,d) |>
+  select(edge_id,d,road_type) |>
   st_join(lsoa_data |> select(LSOA21CD),
           largest = T) |>
   st_drop_geometry() |> 
-  mutate(portion_lsoa = d/sum(d),.by = LSOA21CD) |> 
-  select(-d)
+  mutate(portion_lsoa = d/sum(d,na.rm = T),.by = c(LSOA21CD,road_type)) |> 
+  mutate(portion_lsoa = if_else(road_type=="major" | is.na(LSOA21CD),0,portion_lsoa)) |> 
+  select(-d,-road_type)
 ```
 
 ## Network metrics

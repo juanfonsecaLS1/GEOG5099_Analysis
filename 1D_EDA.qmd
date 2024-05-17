@@ -107,7 +107,7 @@ jct_sf|>
 Centrality vs Flows
 ```{r}
 model_data |> 
-  ggplot(aes(x=std.centrality,y=flow.2023,col=road_type))+
+  ggplot(aes(x=std.centrality,y=flow.2023,col=highway))+
   geom_point()+
   geom_smooth(method = "lm",se = F)+
   theme_ipsum_rc()
@@ -118,7 +118,7 @@ Pop with car availability vs flow
 model_data |> 
   ggplot(aes(x=(total_pop*car_avail_perc),
              y=flow.2023,
-             col=road_type))+
+             col=highway))+
   geom_point()+
   geom_smooth(method = "lm",se = F)+
   theme_ipsum_rc()
@@ -129,7 +129,7 @@ Employed Pop with car availability vs flow
 model_data |> 
   ggplot(aes(x=(total_emp_pop*car_avail_perc),
              y=flow.2023,
-             col=road_type))+
+             col=highway))+
   geom_point()+
   geom_smooth(method = "lm",se = F)+
   theme_ipsum_rc()
@@ -179,7 +179,6 @@ consolidated_catchment <- isochrones |>
   select(from,tlim,ends_with("c")) |> 
   pivot_wider(names_from = tlim,values_from = total_pop_c:wk_pop_c) |> 
   mutate(from = as.character(from))
-
 ```
 
 
@@ -203,7 +202,7 @@ tm_shape(model_data_sf)+
   left_join(consolidated_catchment,
             by = c("from_id"="from")) |> 
   filter(!is.na(total_emp_pop_c_2)))+
-  tm_lines("wk_pop_c_2",lwd = 2)
+  tm_lines("total_emp_pop_c_2",lwd = 2)
 ```
 
 Catchment of usual workplace population
@@ -225,15 +224,15 @@ Joining the catchment to the `model_data` dataset
 model_data_expanded <- model_data_sf |>
   left_join(consolidated_catchment,
             by = c("from_id"="from")) |>
-  select(edge_id,
-         flow.2022,
-         flow.2023,
-         centrality,
-         car_avail_perc,
-         total_pop_c_1:wk_pop_c_5,
-         road_density) |>
+  # select(edge_id,
+  #        flow.2022,
+  #        flow.2023,
+  #        centrality,
+  #        car_avail_perc,
+  #        total_pop_c_1:wk_pop_c_5,
+  #        road_density) |>
   mutate(across(contains("pop"),\(x) x/1e3),
-         centrality = centrality/1e6,
+         centrality = centrality,
          across(starts_with("flow."),\(x) round(x) |> as.integer()))
 ```
 
@@ -243,8 +242,8 @@ model_data_expanded <- model_data_sf |>
 ```{r}
 model_data_expanded |>
   st_drop_geometry() |> 
-  select(flow.2023, centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
-  drop_na(flow.2023, centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
+  select(flow.2023, std.centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
+  drop_na(flow.2023, std.centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
   # mutate(across(everything(),log)) |> 
   GGally::ggpairs()
 ```
