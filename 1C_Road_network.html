@@ -662,12 +662,13 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <p>It will be assumed that the length of each road will be proportional to the population served in each LSOA, i.e.&nbsp;if there are two roads in an LSOA, one with 750 m and the other with 250 m, their distribution will be assumed as 75% and 25% respectively.</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a>edge_lsoa <span class="ot">&lt;-</span> graph_sf_flows <span class="sc">|&gt;</span></span>
-<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(edge_id,d) <span class="sc">|&gt;</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(edge_id,d,road_type) <span class="sc">|&gt;</span></span>
 <span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_join</span>(lsoa_data <span class="sc">|&gt;</span> <span class="fu">select</span>(LSOA21CD),</span>
 <span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>          <span class="at">largest =</span> T) <span class="sc">|&gt;</span></span>
 <span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">portion_lsoa =</span> d<span class="sc">/</span><span class="fu">sum</span>(d),<span class="at">.by =</span> LSOA21CD) <span class="sc">|&gt;</span> </span>
-<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>d)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">portion_lsoa =</span> d<span class="sc">/</span><span class="fu">sum</span>(d,<span class="at">na.rm =</span> T),<span class="at">.by =</span> <span class="fu">c</span>(LSOA21CD,road_type)) <span class="sc">|&gt;</span> </span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">portion_lsoa =</span> <span class="fu">if_else</span>(road_type<span class="sc">==</span><span class="st">"major"</span> <span class="sc">|</span> <span class="fu">is.na</span>(LSOA21CD),<span class="dv">0</span>,portion_lsoa)) <span class="sc">|&gt;</span> </span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>d,<span class="sc">-</span>road_type)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Warning: attribute variables are assumed to be spatially constant throughout
 all geometries</code></pre>
