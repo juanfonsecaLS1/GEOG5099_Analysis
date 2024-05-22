@@ -351,16 +351,19 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>                LSOA21CD,</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>                total_pop,</span>
 <span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>                total_employed,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                wk_pop,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                car_avail_perc,</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                road_density,</span>
-<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                cars_percap_2018,</span>
-<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>                area_km2</span>
-<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>              ) <span class="sc">|&gt;</span></span>
-<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>              <span class="fu">rename</span>(<span class="at">total_emp_pop =</span> total_employed),</span>
-<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">join_by</span>(LSOA21CD)) <span class="sc">|&gt;</span></span>
-<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(total_pop<span class="sc">:</span>wk_pop,</span>
-<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>                \(x) x <span class="sc">*</span> portion_lsoa))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>                car_avail_perc,</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>                wk_pop,</span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>                car_comm_perc,</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a>                road_density,</span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a>                cars_percap_2018,</span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a>                area_km2</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a>              ) <span class="sc">|&gt;</span></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a>              <span class="fu">rename</span>(<span class="at">total_emp_pop =</span> total_employed),</span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a>            <span class="at">by =</span> <span class="fu">join_by</span>(LSOA21CD)) <span class="sc">|&gt;</span></span>
+<span id="cb11-15"><a href="#cb11-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(total_pop<span class="sc">:</span>wk_pop,</span>
+<span id="cb11-16"><a href="#cb11-16" aria-hidden="true" tabindex="-1"></a>                <span class="fu">list</span>(<span class="at">original =</span> \(x) x <span class="sc">*</span> portion_lsoa))) <span class="sc">|&gt;</span></span>
+<span id="cb11-17"><a href="#cb11-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="fu">across</span>(total_pop<span class="sc">:</span>wk_pop,</span>
+<span id="cb11-18"><a href="#cb11-18" aria-hidden="true" tabindex="-1"></a>                \(x) x <span class="sc">*</span> portion_lsoa))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>A version without the geometry of the dataset</p>
 <div class="cell">
@@ -397,11 +400,11 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">minor</td>
-<td style="text-align: left;">0.2%</td>
+<td style="text-align: left;">0.5%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">major</td>
-<td style="text-align: left;">5.7%</td>
+<td style="text-align: left;">9.4%</td>
 </tr>
 </tbody>
 </table>
@@ -435,11 +438,11 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">minor</td>
-<td style="text-align: left;">0.3%</td>
+<td style="text-align: left;">1%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">major</td>
-<td style="text-align: left;">7.2%</td>
+<td style="text-align: left;">11%</td>
 </tr>
 </tbody>
 </table>
@@ -473,15 +476,15 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <tbody>
 <tr class="odd">
 <td style="text-align: left;">minmaj</td>
-<td style="text-align: left;">4.1%</td>
+<td style="text-align: left;">10.3%</td>
 </tr>
 <tr class="even">
 <td style="text-align: left;">minor</td>
-<td style="text-align: left;">0.1%</td>
+<td style="text-align: left;">0.3%</td>
 </tr>
 <tr class="odd">
 <td style="text-align: left;">major</td>
-<td style="text-align: left;">2.5%</td>
+<td style="text-align: left;">3.0%</td>
 </tr>
 </tbody>
 </table>
@@ -663,7 +666,7 @@ log-10 transformation introduced infinite values.</code></pre>
 <pre><code>`geom_smooth()` using formula = 'y ~ x'</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Warning: Removed 15055 rows containing non-finite outside the scale range
+<pre><code>Warning: Removed 15008 rows containing non-finite outside the scale range
 (`stat_smooth()`).</code></pre>
 </div>
 <div class="cell-output cell-output-stderr">
@@ -707,7 +710,7 @@ font family not found in Windows font database</code></pre>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb42"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb42-1"><a href="#cb42-1" aria-hidden="true" tabindex="-1"></a>isochrones <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"03_preprocessing_files/junctions_catchment.csv"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Rows: 4886490 Columns: 5
+<pre><code>Rows: 1700778 Columns: 5
 ── Column specification ────────────────────────────────────────────────────────
 Delimiter: ","
 dbl (5): from, tlim, id, x, y
@@ -847,7 +850,7 @@ dbl (5): from, tlim, id, x, y
 <pre><code>Deleting source `03_preprocessing_files/model_data.gpkg' using driver `GPKG'
 Writing layer `model_data' to data source 
   `03_preprocessing_files/model_data.gpkg' using driver `GPKG'
-Writing 15076 features with 54 fields and geometry type Line String.</code></pre>
+Writing 15076 features with 59 fields and geometry type Line String.</code></pre>
 </div>
 </div>
 

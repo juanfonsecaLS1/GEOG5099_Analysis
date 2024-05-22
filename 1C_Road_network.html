@@ -419,21 +419,17 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>              <span class="st">"primary"</span>,</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>              <span class="st">"primary_link"</span>,</span>
 <span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>              <span class="st">"trunk"</span>,</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">"trunk_link"</span>,</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>              <span class="st">"secondary"</span>,</span>
-<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>              <span class="st">"secondary_link"</span>,</span>
-<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>              <span class="st">"tertiary"</span>,</span>
-<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>              <span class="st">"tertiary_link"</span>)</span>
-<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a>road_types <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"motorway"</span>, <span class="st">"motorway_link"</span>, <span class="st">"trunk"</span>, <span class="st">"trunk_link"</span>, <span class="st">"primary"</span>,</span>
-<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>               <span class="st">"primary_link"</span>, <span class="st">"secondary"</span>, <span class="st">"secondary_link"</span>,</span>
-<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>               <span class="st">"tertiary"</span>, <span class="st">"tertiary_link"</span>,</span>
-<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>               <span class="st">"unclassified"</span>, <span class="st">"living_street"</span>, <span class="st">"residential"</span>)</span>
-<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> dodgr<span class="sc">::</span><span class="fu">weight_streetnet</span>(osm_sc,</span>
-<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">keep_cols =</span> <span class="fu">c</span>(<span class="st">"name"</span>,<span class="st">"ref"</span>,<span class="st">"highway"</span>,<span class="st">"junction"</span>,<span class="st">"maxspeed"</span>,<span class="st">"oneway"</span>),</span>
-<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">wt_profile =</span> <span class="st">"motorcar"</span></span>
-<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a>                                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>              <span class="st">"trunk_link"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a>road_types <span class="ot">=</span> <span class="fu">c</span>(<span class="st">"motorway"</span>, <span class="st">"motorway_link"</span>, <span class="st">"trunk"</span>, <span class="st">"trunk_link"</span>, <span class="st">"primary"</span>,</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a>               <span class="st">"primary_link"</span>, <span class="st">"secondary"</span>, <span class="st">"secondary_link"</span>,</span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a>               <span class="st">"tertiary"</span>, <span class="st">"tertiary_link"</span>,</span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a>               <span class="st">"unclassified"</span>, <span class="st">"living_street"</span>, <span class="st">"residential"</span>)</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a>graph <span class="ot">&lt;-</span> dodgr<span class="sc">::</span><span class="fu">weight_streetnet</span>(osm_sc,</span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">keep_cols =</span> <span class="fu">c</span>(<span class="st">"name"</span>,<span class="st">"ref"</span>,<span class="st">"highway"</span>,<span class="st">"junction"</span>,<span class="st">"maxspeed"</span>,<span class="st">"oneway"</span>),</span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a>                                 <span class="at">wt_profile =</span> <span class="st">"motorcar"</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a>                                 )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Loading required namespace: geodist</code></pre>
 </div>
