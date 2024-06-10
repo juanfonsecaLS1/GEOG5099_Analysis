@@ -1,0 +1,91 @@
+---
+title: "Prediction"
+author: "Juan Fonseca"
+format: html
+---
+
+```{r}
+library(tidyverse)
+library(tidymodels)
+library(performance)
+library(sf)
+library(kableExtra)
+library(tmap)
+```
+
+## Load model data
+
+Loading the models previously fitted
+
+```{r}
+load("03_preprocessing_files/fitted_models.RData")
+```
+
+## Subsetting the data for prediction
+
+```{r}
+pred_data_1 <- model_data_expanded |> st_drop_geometry() |> filter(highway %in% c("trunk","primary","secondary"))
+```
+
+## Predicting
+
+```{r}
+my_models_major <- c("B4b_model.p","B4b_model.nb")
+
+pred_major <- do.call(cbind,lapply(my_models_major,\(x){
+  predict(models_major[[x]],pred_data_1,type = "response")
+}))
+
+pred_major <- pred_major |> as.data.frame()
+
+names(pred_major) <- my_models_major
+
+predictions_major <- pred_data_1 |> select(edge_id) |> bind_cols(pred_major) 
+
+```
+
+```{r}
+my_models_full <- c("B5b_model.p","B5b_model.nb")
+
+pred_full <- do.call(cbind,lapply(my_models_major,\(x){
+  predict(models_major[[x]],model_data_expanded,type = "response")
+}))
+
+pred_full <- pred_full |> as.data.frame()
+
+names(pred_full) <- my_models_full
+
+predictions_full <- model_data_expanded |> st_drop_geometry() |> select(edge_id) |> bind_cols(pred_full) 
+
+```
+
+Visualising the predictions
+```{r}
+pred_net <- model_data_expanded |>
+  left_join(predictions_major,by = "edge_id") |>
+  left_join(predictions_full,by = "edge_id") |> 
+  mutate(across(B4b_model.p:B5b_model.nb,list(resid = \(x) x-flow.2023)))
+```
+
+```{r}
+save(pred_net,file = "03_preprocessing_files/prednet.RData")
+```
+
+
+```{r,eval}
+pred_net |>
+  st_drop_geometry() |>
+  ggplot()+
+  geom_point(aes(x=B4b_model.p,y = scale(B4b_model.p_resid)))+
+  geom_point(aes(x=B5b_model.p,y = scale(B5b_model.p_resid)),col = "red")
+  
+```
+
+```{r}
+pred_net |> 
+  tm_shape() +
+  tm_lines("B5b_model.p")
+```
+
+
+

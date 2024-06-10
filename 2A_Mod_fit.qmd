@@ -7,168 +7,110 @@ format: html
 ```{r}
 library(sf)
 library(tidyverse)
-library(brms)
 ```
 
 ## Loading data
 
 ```{r}
 model_data_expanded <- st_read("03_preprocessing_files/model_data.gpkg")
+par_matrix <- read_csv("parameters_matrix.csv") |>
+  mutate(across(-Model,\(x) !is.na(x)))
 ```
+
+
+## Splitting dataset into Trainning/Validation
+```{r}
+myvars <- names(par_matrix)[2:15]
+
+full_dataset <- model_data_expanded |> st_drop_geometry() |> drop_na(flow.2023)
+
+full_dataset_major <- full_dataset |> filter(highway %in% c("trunk","primary","secondary"))
+
+library(caret)
+set.seed(1234)
+part_index <- createDataPartition(full_dataset$flow.2023,p = 0.7,list = F)
+set.seed(1234)
+part_index_major <- createDataPartition(full_dataset_major$flow.2023,p = 0.7,list = F)
+
+train_data <- full_dataset[part_index,]
+test_data <- full_dataset[-part_index,]
+
+train_data_major <- full_dataset_major[part_index_major,]
+test_data_major <- full_dataset_major[-part_index_major,]
+```
+
 
 ## Fitting models
-
-### GLM model
-
 ```{r}
-model_data_noNAs<- model_data_expanded |> 
-  select(flow.2022,
-         flow.2023,
-         centrality,
-         car_avail_perc,
-         total_pop_c_1:wk_pop_c_5,
-         road_density) |>
-  drop_na()
-```
+models_control <- tibble(model=par_matrix$Model,
+                 # Preparing all formulas for the models
+                 form = apply(
+  par_matrix[,2:15],
+  1,
+  \(x) paste0("flow.2023 ~ ",
+                         paste(names(par_matrix)[2:15][x],
+                               collapse = " + "))))
 
-A simple model with the centrality only for major roads
-
-```{r}
-GLM_models <- lapply(
-  1:5,
-  function(i) {
-    myformula <- as.formula(paste0(
-      "flow.2023 ~ total_pop_c_",
-      i,
-      " + wk_pop_c_",
-      i,
-      " + road_density"
-    ))
-    
-    m <- glm(myformula,
-             data = model_data_noNAs,
-             family = poisson())
-  }
-)
+models_control
 ```
 
 
-### GWPR
+### Fitting models
+
+For the whole dataset
 
 ```{r}
-library(GWmodel)
+models <- lapply(models_control$form,\(x){
+                  
+                 model.p = glm(as.formula(x),
+                               data = train_data,
+                               family = "poisson")
+                 
+                 model.nb = MASS::glm.nb(as.formula(x),
+                                          data = train_data)
+                 
+                 return(list(model.p = model.p, model.nb = model.nb))
+                        })
 
-model_data_noNAs_sp <- as(model_data_noNAs |> st_centroid(),"Spatial")
-dMat <- model_data_noNAs |> st_centroid() |> st_coordinates() |> gw.dist()
+names(models) <- models_control$model
 
-GWPR_models <- lapply(
-  1:5,
-  function(i){
-    myformula <- as.formula(paste0(
-      "flow.2023 ~ total_pop_c_",
-      i,
-      " + wk_pop_c_",
-      i,
-      " + road_density"
-    ))
-    
-    # Determine the adaptive bandwidth
-    abw <- bw.ggwr(
-      formula = myformula,
-      data = model_data_noNAs_sp,
-      family = "poisson",
-      approach = "AICc",
-      kernel = "bisquare",
-      adaptive = TRUE,
-      dMat = dMat
-    )
-    # Fit GWPR
-    gwpr.m <- ggwr.basic(
-      myformula,
-      data = model_data_noNAs_sp,
-      family = "poisson",
-      bw = abw,
-      kernel = "bisquare",
-      adaptive = TRUE,
-      dMat = dMat
-    )
-    }
-  )
+models <- list_flatten(models)
 ```
 
+For major roads `highway > Secondary` 
 
-### Bayesian Negative Binomial regression
 ```{r}
-library(brms)
-Bayes_NBin_models <- lapply(
-  1:5,
-  function(i) {
-    myformula <- as.formula(paste0(
-      "flow.2023 ~ total_pop_c_",
-      i,
-      " + wk_pop_c_",
-      i,
-      " + road_density"
-    ))
-    
-    m <- brm(myformula,
-             data = model_data_noNAs,
-             family = negbinomial())
-  }
-)
-```
+models_major <- lapply(models_control$form[2:51],\(x){
+                  
+                 model.p = glm(as.formula(x),
+                               data = train_data_major,
+                               family = "poisson")
+                 
+                 model.nb = MASS::glm.nb(as.formula(x),
+                                          data = train_data_major)
+                 
+                 return(list(model.p = model.p, model.nb = model.nb))
+                        })
 
+names(models_major) <- models_control$model[2:51]
 
-## Null models
+models_major <- list_flatten(models_major)
 
-### GLM
-```{r}
-null.glm <- glm(flow.2023 ~ 1,
-              data = model_data_noNAs,
-              family = poisson())
-```
-
-### GWPR
-```{r}
-abw <- bw.ggwr(
-  formula = flow.2023 ~ 1,
-  data = model_data_noNAs_sp,
-  family = "poisson",
-  approach = "AICc",
-  kernel = "bisquare",
-  adaptive = TRUE,
-  dMat = dMat
-)
-# Fit GWPR
-null.gwpr <- ggwr.basic(
-  flow.2023 ~ 1,
-  data = model_data_noNAs_sp,
-  family = "poisson",
-  bw = abw,
-  kernel = "bisquare",
-  adaptive = TRUE,
-  dMat = dMat
-)
-```
-
-
-### Bayesian
-```{r}
-null.bnb <- brm(flow.2023 ~ 1,
-                data = model_data_noNAs,
-                family = negbinomial())
 ```
 
 
 ## Saving the data
 
 ```{r}
-save(GLM_models,
-     GWPR_models,
-     Bayes_NBin_models,
-     null.glm,
-     null.gwpr,
-     null.bnb,
+save(models,
+     models_major,
+     model_data_expanded,
+     par_matrix,
+     models_control,
+     test_data,
+     train_data,
+     test_data_major,
+     train_data_major,
      file = "03_preprocessing_files/fitted_models.RData")
 ```
 

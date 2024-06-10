@@ -89,11 +89,7 @@ major_ref = c("motorway",
               "primary",
               "primary_link",
               "trunk",
-              "trunk_link",
-              "secondary",
-              "secondary_link",
-              "tertiary",
-              "tertiary_link")
+              "trunk_link")
 
 road_types = c("motorway", "motorway_link", "trunk", "trunk_link", "primary",
                "primary_link", "secondary", "secondary_link",
@@ -261,7 +257,6 @@ junction_class_from <- graph_sf_flows |>
   pivot_wider(names_from = road_type,values_from = count) |>
   rename(id = from_id)
 
-
 junctions_classed <- junction_class_to |> 
   full_join(junction_class_from,by = "id",suffix = c(".to",".from")) |> 
   mutate(jct_type = case_when(is.na(minor.to)&is.na(minor.from)~"major",
@@ -269,8 +264,53 @@ junctions_classed <- junction_class_to |>
                               (!is.na(minor.to)&!is.na(major.from))|
                                 (!is.na(minor.from)&!is.na(major.to))~"minmaj")) |> 
   select(-starts_with("m"))
-rm(junction_class_from,junction_class_to)
+
+# To identify all junctions with at least a tertiary road
+junction_class_to_exp <- graph_sf_flows |>
+  st_drop_geometry() |>
+  summarise(count = n(),.by = c(to_id,highway)) |>
+  pivot_wider(names_from = highway,values_from = count)|> 
+  rename(id = to_id)
+
+junction_class_from_exp <- graph_sf_flows |>
+  st_drop_geometry() |>
+  summarise(count = n(),.by = c(from_id,highway)) |>
+  pivot_wider(names_from = highway,values_from = count) |>
+  rename(id = from_id)
+
+# A list of junctions with roas > tertiary
+junctions_ids_exp  <- junction_class_to_exp |> 
+  bind_rows(junction_class_from_exp) |> 
+  summarise(across(residential:secondary_link,\(x) sum(x,na.rm = T)),.by = id) |> 
+  pivot_longer(-id) |> filter(value>0) |> 
+  # mutate(type = !(name %in% c("residential","unclassified"))) |> 
+  mutate(type = !(name %in% c("residential"))) |>
+  summarise(type_tot = sum(type)>0,.by = id) |> 
+  filter(type_tot) |>
+  pull(id)
+
+junctions_ids_exp_plot  <- junction_class_to_exp |> mutate(type = "to") |> 
+  bind_rows(junction_class_from_exp |> mutate(type = "from")) |> 
+  summarise(across(residential:secondary_link,\(x) sum(x,na.rm = T)),.by = c(id,type)) |> 
+  pivot_longer(-c(id,type)) |>
+  filter(value>0) |> 
+  mutate(name = str_remove(name,"_link")) |> 
+  mutate(name = factor(name,
+                       levels = c("trunk","primary","secondary","tertiary","unclassified", "residential"),
+                       ordered = T)) |> 
+  summarise(across(value,sum),.by=c(id,type,name)) |> 
+  # mutate(name = as.integer(name)) |> 
+  reframe(min_type = range(name)[1],
+          max_type = range(name)[2],
+          .by=id) |> 
+  summarise(freq = n(),.by = c(min_type,max_type)) |> 
+  mutate(dens=freq/sum())
+
+write_rds(junctions_ids_exp_plot,"03_preprocessing_files/junctions_ids_exp_plot.rds")    
+           
+rm(junction_class_from,junction_class_to,junction_class_from_exp,junction_class_to_exp)
 ```
+
 
 Mean incoming approach flows  are calculated for all junctions, i.e. if a junction has 4 incoming roads/edges, an average of the 4 is calculated. Outgoing flows are not considered to avoid double-counting since the in and out flows should be the same.  
 
@@ -398,13 +438,13 @@ tm_shape(graph_sf_centrality)+
   tm_lines(col = "std.centrality",palette = "viridis",lwd = 1,style = "fisher")
 ```
 
-### Catchment for major roads
+### Catchment for all junctions 
 
 Points withing iso-chrone bands are extracted using the graph
 
 ```{r isoverts}
 nodes_list <- junctions_flows |> 
-  filter(jct_type!="minor") |> pull(id) |> unique()
+  filter(id %in% junctions_ids_exp) |> pull(id) |> unique()
 
 # Distance bands
 tlim <- c (1,2,3,4,5)*60
@@ -417,8 +457,8 @@ An example of the results for one of the nodes
 ```{r catch_map}
 tmap_mode("plot")
 
-nodes_sample <-c("858681448", d |>
-filter(from=="858681448") |> 
+nodes_sample <-c("21287149", d |>
+filter(from=="21287149") |> 
   pull(id))
 
 tm_shape(graph_sf |> 
@@ -426,10 +466,10 @@ tm_shape(graph_sf |>
   tm_lines("skyblue")+
   tm_shape(d |>
   st_as_sf(coords = c("x","y"),crs = 4326) |>
-  filter(from == "858681448"))+
-  tm_dots("tlim",size = 0.1,breaks = c (0,1,2,3,4,5,6),title = "Catchment (min)")+
+  filter(from == "21287149"))+
+  tm_dots("tlim",size = 0.1,breaks = c (0,1,2,3,4,5,6),style = "cont",title = "Catchment (min)")+
   tm_shape(junctions_flows |> 
-             filter(id == "858681448"))+
+             filter(id == "21287149"))+
   tm_dots("red",size = 1)
 ```
 

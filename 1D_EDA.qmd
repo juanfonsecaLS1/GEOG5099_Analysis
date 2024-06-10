@@ -7,6 +7,7 @@ format: html
 ```{r libraries, message=FALSE,warning=FALSE}
 library(tidyverse)
 library(kableExtra)
+library(extrafont)
 library(hrbrthemes)
 library(tmap)
 library(sf)
@@ -18,6 +19,8 @@ library(sf)
 net_data_sf <- st_read("03_preprocessing_files/network_data.gpkg", layer = "network_data")
 LSOA_sf <- st_read("03_preprocessing_files/network_data.gpkg", layer = "LSOA")
 jct_sf <- st_read("03_preprocessing_files/network_data.gpkg", layer = "junctions")
+
+junctions_exp_plot <- read_rds("03_preprocessing_files/junctions_ids_exp_plot.rds")
 
 bounds_model <- st_read("03_preprocessing_files/bounds_model.geoJSON")
 
@@ -35,16 +38,23 @@ model_data_sf <- net_data_sf[bounds_model,] |>
                 LSOA21CD,
                 total_pop,
                 total_employed,
-                wk_pop,
                 car_avail_perc,
+                wk_pop,
+                car_comm_perc,
                 road_density,
+                jct_density,
                 cars_percap_2018,
                 area_km2
               ) |>
               rename(total_emp_pop = total_employed),
             by = join_by(LSOA21CD)) |>
   mutate(across(total_pop:wk_pop,
-                \(x) x * portion_lsoa))
+                list(original = \(x) x))) |>
+  mutate(across(c(total_pop,wk_pop),
+                \(x) if_else(road_type=="major",NA,x * portion_lsoa))) |>
+  mutate(total_pop = total_pop*car_avail_perc,
+         wk_pop=wk_pop*car_comm_perc) |> 
+  mutate(highway = str_remove(highway,"_link"))
 ```
 
 A version without the geometry of the dataset
@@ -55,6 +65,34 @@ model_data <- model_data_sf |>
 ```
 
 ## Exploration
+
+### Network
+
+```{r}
+library(ggridges)
+ggplot(model_data_sf[bounds_model,],
+       aes(y=fct_rev(fct_relevel(highway,
+                         c("trunk","primary","secondary","tertiary","unclassified", "residential"))),
+                         x=d))+
+  geom_jitter(alpha = 0.15,size = 0.2)+
+  geom_boxplot(outlier.shape = NA,alpha = 0.7,varwidth = T)+
+  labs(y = "",
+       x = "link lenght (m)")
+```
+
+A quick look at the distribution of junctions by road type
+
+```{r}
+junctions_exp_plot |>
+  ggplot(aes(x=fct_rev(min_type),y = max_type))+
+  geom_tile(aes(fill = dens))+
+  scale_fill_distiller(palette="Blues", direction=1)+
+  geom_text(aes(label = sprintf(dens*100,fmt = "%0.0f%%"),
+                col = dens<0.4),family = "Roboto Condensed")+
+  scale_color_manual(values = c("white","blue"))+
+  coord_fixed()
+  # theme_ipsum_rc()
+```
 
 ### Sample size
 Extracting sample size based on the number of monitored edges
@@ -102,54 +140,27 @@ jct_sf|>
   kable_paper()
 ```
 
-### Correlation between flows and some of the variables
+### Flows Distribution
 
-Centrality vs Flows
 ```{r}
 model_data |> 
-  ggplot(aes(x=std.centrality,y=flow.2023,col=highway))+
-  geom_point()+
-  geom_smooth(method = "lm",se = F)+
-  theme_ipsum_rc()
+  ggplot(aes(flow.2023))+
+  geom_histogram(binwidth = 750,col = "dodgerblue4",fill = "dodgerblue4",alpha = 0.5,linewidth = 1)+
+  theme_ipsum_rc()+
+  scale_x_comma()+
+  geom_hline(yintercept = 0,linewidth = 2,col = "black")+
+  labs(x = "AADF",
+       y = "Frequency")+
+  # facet_grid(highway~.)+
+  theme(panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank())
 ```
 
-Pop with car availability vs flow
-```{r}
-model_data |> 
-  ggplot(aes(x=(total_pop*car_avail_perc),
-             y=flow.2023,
-             col=highway))+
-  geom_point()+
-  geom_smooth(method = "lm",se = F)+
-  theme_ipsum_rc()
-```
 
-Employed Pop with car availability vs flow
-```{r}
-model_data |> 
-  ggplot(aes(x=(total_emp_pop*car_avail_perc),
-             y=flow.2023,
-             col=highway))+
-  geom_point()+
-  geom_smooth(method = "lm",se = F)+
-  theme_ipsum_rc()
-```
-
-Workplace Pop vs flow
-```{r}
-model_data |> 
-  ggplot(aes(x=wk_pop,
-             y=flow.2023,
-             col=road_type))+
-  geom_point()+
-  scale_x_log10()+
-  geom_smooth(method = "lm",se = F)+
-  theme_ipsum_rc()
-```
 
 ### Catchment of each node
 
-Alternatively, population and jobs  serviced can be used as as per Selby 2011. Using population and jobs served within specific distances. For this purpose, the catchmets are loaded
+Alternatively, population and jobs  serviced can be used as as per Selby 2011. Using population and jobs served within specific distances. For this purpose, the catchments are loaded
 
 ```{r}
 isochrones <- read_csv("03_preprocessing_files/junctions_catchment.csv")
@@ -161,7 +172,7 @@ This iterates through all origin nodes and calculates the total population and j
 consolidated_catchment <- isochrones |>
   mutate(id = as.character(id)) |> 
   left_join(model_data |>
-              select(to_id, total_pop, total_emp_pop, wk_pop),
+              select(to_id, total_pop, wk_pop),
             by=c("id"="to_id"),
             relationship = "many-to-many") |> 
   summarise(across(ends_with("pop"),
@@ -190,20 +201,15 @@ tm_shape(model_data_sf)+
   tm_shape(model_data_sf |>
   left_join(consolidated_catchment,
             by = c("from_id"="from")) |> 
+    mutate(total_pop_c_2 = if_else(highway %in% c("residential",
+                                                  "unclassified"
+                                                  ),
+                                   NA,
+                                   total_pop_c_2)) |> 
   filter(!is.na(total_pop_c_2)))+
   tm_lines("total_pop_c_2",lwd = 2)
 ```
 
-Catchment of employed residents within 2 minutes
-```{r}
-tm_shape(model_data_sf)+
-  tm_lines("skyblue",lwd = 0.7)+
-  tm_shape(model_data_sf |>
-  left_join(consolidated_catchment,
-            by = c("from_id"="from")) |> 
-  filter(!is.na(total_emp_pop_c_2)))+
-  tm_lines("total_emp_pop_c_2",lwd = 2)
-```
 
 Catchment of usual workplace population
 ```{r}
@@ -211,10 +217,15 @@ tm_shape(model_data_sf)+
   tm_lines("skyblue",lwd = 0.7)+
   tm_shape(model_data_sf |>
   left_join(consolidated_catchment,
-            by = c("from_id"="from")) |> 
+            by = c("from_id"="from"))|> 
+    mutate(wk_pop_c_2 = if_else(highway %in% c("residential",
+                                                  "unclassified"),
+                                   NA,
+                                   wk_pop_c_2)) |> 
   filter(!is.na(wk_pop_c_2)))+
   tm_lines("wk_pop_c_2",lwd = 2)
 ```
+
 
 ## Consolidating the dataset for model fitting
 
@@ -222,31 +233,168 @@ Joining the catchment to the `model_data` dataset
 
 ```{r}
 model_data_expanded <- model_data_sf |>
-  left_join(consolidated_catchment,
-            by = c("from_id"="from")) |>
-  # select(edge_id,
-  #        flow.2022,
-  #        flow.2023,
-  #        centrality,
-  #        car_avail_perc,
-  #        total_pop_c_1:wk_pop_c_5,
-  #        road_density) |>
-  mutate(across(contains("pop"),\(x) x/1e3),
-         centrality = centrality,
-         across(starts_with("flow."),\(x) round(x) |> as.integer()))
+  left_join(consolidated_catchment, by = c("from_id" = "from")) |>
+  mutate(across(contains("_c_"), \(x) {
+    # if_else(highway %in% c("residential", "unclassified"), NA, x)
+    if_else(highway %in% c("residential"), NA, x)
+  })) |>
+  mutate(
+    across(contains("pop"), \(x) x / 1e3),
+    centrality = centrality,
+    across(starts_with("flow."), \(x) round(x) |> as.integer())
+  )
+```
+
+
+
+```{r}
+model_data_expanded |> 
+  st_drop_geometry() |> 
+  drop_na(flow.2023) |> 
+  select(dist.jct,
+         std.centrality,
+         jct_density,
+         road_density,
+         total_pop,
+         wk_pop,
+         total_pop_c_1:wk_pop_c_5) %>% 
+    map_df(.f = ~ broom::tidy(summary(.x)), .id = "code") |> 
+  kable(digits = 3)
+  
+```
+
+
+
+
+### Correlation between flows and some of the variables
+Linear
+```{r}
+model_data_expanded |> 
+  st_drop_geometry() |> 
+  drop_na(flow.2023) |> 
+  select(flow.2023,
+         highway,
+         std.centrality,
+         jct_density,
+         road_density,
+         total_pop,
+         wk_pop,
+         total_pop_c_1:wk_pop_c_5) |> 
+  select(-highway) |> 
+  mutate(across(std.centrality:wk_pop_c_5,\(x) (x-mean(x,na.rm = T))/sd(x,na.rm = T))) |> 
+  pivot_longer(-flow.2023) |> 
+  ggplot(aes(y=flow.2023,x=value))+
+  geom_point(col = "dodgerblue4",alpha = 0.2, shape = 19)+
+  facet_wrap(name~.)+
+  # coord_fixed()+
+  scale_y_comma()+
+  scale_x_continuous(limits = c(-3,3))+
+  geom_smooth(method = "lm",se = F, col = "deeppink4")+
+  theme_ipsum_rc()
+```
+
+
+Individual regression
+```{r}
+library(tidymodels)
+coefs <- model_data_expanded |> 
+  st_drop_geometry() |> 
+  drop_na(flow.2023) |> 
+  select(flow.2023,
+         highway,
+         std.centrality,
+         jct_density,
+         road_density,
+         total_pop,
+         wk_pop,
+         total_pop_c_1:wk_pop_c_5) |> 
+  select(-highway) |> 
+  mutate(across(std.centrality:wk_pop_c_5,\(x) (x-mean(x,na.rm = T))/sd(x,na.rm = T))) |> 
+  pivot_longer(-flow.2023) |> 
+  nest(data = -name) |> 
+  mutate(model.p = map(data,\(x) glm(flow.2023~value,data = x,family = "poisson")),
+         model.nb = map(data,\(x) MASS::glm.nb(flow.2023~value,data = x)),
+         values.p = exp(map_dbl(model.p,\(x) tidy(x)$estimate[tidy(x)$term == "value"])),
+         values.nb = exp(map_dbl(model.nb,\(x) tidy(x)$estimate[tidy(x)$term == "value"])),
+         pR2.p = map_dbl(model.p,\(x) 1-(x$deviance/x$null.deviance)),
+         pR2.nb = map_dbl(model.nb,\(x) 1-(x$deviance/x$null.deviance))) |> 
+  select(-data,-model.p,-model.nb)
+
+
+
+
+z_data <- model_data_expanded |> 
+  st_drop_geometry() |> 
+  drop_na(flow.2023) |> 
+  select(flow.2023,
+         highway,
+         std.centrality,
+         jct_density,
+         road_density,
+         total_pop,
+         wk_pop,
+         total_pop_c_1:wk_pop_c_5) |> 
+  select(-highway) |> 
+  mutate(across(std.centrality:wk_pop_c_5,\(x) (x-mean(x,na.rm = T))/sd(x,na.rm = T))) 
+
+z_data|> 
+  pivot_longer(-flow.2023) |> 
+  ggplot(aes(y=flow.2023,x=value))+
+  geom_point(col = "dodgerblue4",alpha = 0.2, shape = 19)+
+  geom_text(data = coefs,
+            aes(x = 3,y = 18.7e3,
+                label = paste0("P Coef: ",round(values.p,2), " (",sprintf("%0.2f",pR2.p),")")),
+            colour = "deeppink4",family = "Roboto Condensed",hjust = 1, size = 8,size.unit = "pt")+
+  geom_text(data = coefs,
+            aes(x = 3,y = 16.5e3,
+                label = paste0("NB Coef: ",round(values.nb,2), " (",sprintf("%0.2f",pR2.nb),")")),
+            colour = "goldenrod3",family = "Roboto Condensed",hjust = 1,size = 8,size.unit = "pt")+
+  facet_wrap(name~.,ncol = 3)+
+  # coord_fixed()+
+  scale_y_comma()+
+  scale_x_continuous(limits = c(-3,3))+
+  geom_smooth(method = "glm", se = F, 
+        method.args = list(family = "poisson"), col = "deeppink4",alpha = 0.5)+
+  geom_smooth(method = MASS::glm.nb, se = F, col = "goldenrod1",alpha = 0.5)+
+  # theme_ipsum_rc()+
+  theme(panel.grid.minor.y = element_blank(),
+        panel.grid.minor.x = element_blank())
+```
+
+A quick look at the distribution of centrality measures by road type
+
+```{r}
+  model_data_expanded |> ggplot(aes(x = fct_reorder(highway,std.centrality,median),y = std.centrality))+
+  geom_boxplot()
+```
+
+
+```{r}
+model_data_expanded |> st_drop_geometry() |>  summarise(across(std.centrality,median),.by = highway) |> arrange(-std.centrality)
 ```
 
 
 ### Exploring interactions among the variables in the dataset
 
 ```{r}
-model_data_expanded |>
-  st_drop_geometry() |> 
-  select(flow.2023, std.centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
-  drop_na(flow.2023, std.centrality, total_pop_c_2,total_emp_pop_c_2, wk_pop_c_2) |>
-  # mutate(across(everything(),log)) |> 
-  GGally::ggpairs()
+library(ggcorrplot)
+cor_mat <- z_data |> select(-flow.2023) |> cor(use = "pairwise.complete.obs") |> round(digits = 2)
+p.mat <- z_data |> select(-flow.2023) |> cor_pmat()
+
+a <- ggcorrplot(cor_mat,
+                p.mat = p.mat,
+                hc.order = TRUE,
+                ggtheme = hrbrthemes::theme_ipsum_rc,legend.title = "Correlation", 
+    type = "lower", insig = "blank",
+    colors = c('#ca0020','#f7f7f7','#0571b0'))
+
+a+ geom_text(aes(
+    label = ifelse(abs(value)>0,value,NA) ),
+  family = "Roboto Condensed",size = 8,size.unit = "pt")+
+  theme(legend.position = "none")
+
 ```
+
 
 ## Saving data
 ```{r}

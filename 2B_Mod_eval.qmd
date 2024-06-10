@@ -6,167 +6,164 @@ format: html
 
 ```{r}
 library(tidyverse)
-library(broom)
-library(GWmodel)
-library(brms)
+library(tidymodels)
+library(performance)
 library(sf)
+library(kableExtra)
 ```
 
 ## Load model data
 
-### Data
-```{r}
-model_data_expanded <- st_read("03_preprocessing_files/model_data.gpkg")
-model_data_noNAs<- model_data_expanded |> 
-  select(flow.2022,
-         flow.2023,
-         centrality,
-         car_avail_perc,
-         total_pop_c_1:wk_pop_c_5,
-         road_density) |>
-  drop_na()
-```
-
-### Fitted models
+Loading the models previously fitted
 
 ```{r}
 load("03_preprocessing_files/fitted_models.RData")
 ```
 
-## Model Comparison
+### Producing performance metrics
 
-### GLM
+For the whole dataset
 ```{r}
-lapply(GLM_models,
-       function(mymodel){
-         summary(mymodel)
-         }
-       )
+model_metrics <- do.call(rbind,lapply(models,\(x){
+  tAIC = performance::performance_aicc(x)
+  tpR2 = performance::r2_efron(x)
+  trmse = performance::rmse(x)
+  tmae = performance::mae(x)
+  tibble(AIC = tAIC, pR2 = tpR2,rmse = trmse, mae = tmae)
+})) |> cbind(tibble(model = names(models)))
+```
+
+For major roads
+```{r}
+model_metrics_major <- do.call(rbind,lapply(models_major,\(x){
+  tAIC = performance::performance_aicc(x)
+  tpR2 = performance::r2_efron(x)
+  trmse = performance::rmse(x)
+  tmae = performance::mae(x)
+  tibble(AIC = tAIC, pR2 = tpR2,rmse = trmse, mae = tmae)
+})) |> cbind(tibble(model = names(models_major)))
+```
+
+#### Validating the predictive performance
+
+For all dataset
+```{r}
+model_validation <- do.call(rbind,lapply(models,\(x){
+  tibble(rmse = caret::RMSE(predict(x,test_data,type = "response"),obs = test_data$flow.2023,na.rm = T),
+         mae = caret::MAE(predict(x,test_data,type = "response"),obs = test_data$flow.2023,na.rm = T))
+}))|> cbind(tibble(model = names(models)))
+```
+
+For major roads
+
+```{r}
+model_validation_major <- do.call(rbind,lapply(models_major,\(x){
+  tibble(rmse = caret::RMSE(predict(x,test_data_major,type = "response"),obs = test_data_major$flow.2023,na.rm = T),
+         mae = caret::MAE(predict(x,test_data_major,type = "response"),obs = test_data_major$flow.2023,na.rm = T))
+}))|> cbind(tibble(model = names(models_major)))
+```
+
+All dataset
+```{r}
+model_metrics |>
+  pivot_longer(-model) |>
+  filter(name !="AIC") |> 
+  mutate(mod_type = str_extract(model,"^\\w")) |> 
+  ggplot(aes(value,fill = mod_type))+
+  geom_histogram()+
+  facet_wrap(name~.,nrow = 1,scales = "free_x")+
+  theme(legend.position = "top")
 ```
 
 
+Major dataset
+
 ```{r}
-GLM_coef <- lapply(GLM_models,
-       function(mymodel){
-         beta <- coef(mymodel)
-         exp(confint(mymodel,level = 0.95))
-       })
-GLM_coef
+model_metrics_major |>
+  pivot_longer(-model) |>
+  filter(name !="AIC") |> 
+  mutate(mod_type = str_extract(model,"^\\w")) |> 
+  ggplot(aes(value,fill = mod_type))+
+  geom_histogram()+
+  facet_wrap(name~.,nrow = 1,scales = "free_x")+
+  theme(legend.position = "top")
+```
+
+A quick look of the observed vs predicted using the validation subset
+
+```{r}
+plot(x=predict(models[["B1c_model.nb"]],test_data,type = "response"),y=test_data$flow.2023,xlim = c(0,1e4),ylim = c(0,2e4))
+abline(a = 0,b = 1)
+```
+
+
+
+
+```{r}
+models$C5a_model.nb |> summary()
+models$C5a_model.p|> summary()
+```
+
+### Extracting coefficients
+
+For the whole dataset
+
+```{r}
+my_models <- c("A_model.p","A_model.nb","B5b_model.p","B5b_model.nb","C2a_model.p","C2a_model.nb")
+
+my_models %in% names(models)
+
 ```
 
 ```{r}
-GLM_coef_df <- do.call(rbind,lapply(GLM_coef,\(x){
-  y <- as.data.frame(x)
-  y$id <- row.names(x)
-  y$catchment <- y |> mutate(catchid=str_extract(id,"c_\\d")) |> drop_na() |> pull(catchid) |> unique()
-  tibble(y) |> mutate(id = str_remove(id,paste0("_",catchment)))
+coefs <- do.call(bind_rows, lapply(my_models,\(x){
+  y = models[[x]] |> confint() |> exp() |> as.data.frame()
+  y$est <- models[[x]] |> coefficients() |> exp()
+  y$parameter <- row.names(y)
+  y$model <- x
+  return(tibble(y))
 }))
+
+
+coef_sum <- coefs |> 
+  rename(lowlim=`2.5 %`,highlim= `97.5 %`) |> 
+  mutate(mod_type = str_extract(model,"^\\w{1,3}(?=_)"),
+       Dist = str_extract(model,"(?<=\\.)\\w{1,2}")) |> 
+select(mod_type,Dist,parameter,est,lowlim,highlim)
+
+```
+
+For major roads
+
+```{r}
+my_models_major <- c("B4b_model.p","B4b_model.nb","C1b_model.p","C1b_model.nb")
 ```
 
 ```{r}
-ggplot(GLM_coef_df)+
-  geom_linerange(aes(xmin =`2.5 %`,xmax = `97.5 %`, y = catchment))+
-  facet_grid(.~id,scales = "free")
-```
-
-#### RMSE
-```{r}
-GLM_RMSE <- vapply(
-  GLM_models,
-  function(mymodel) {
-    mean((mymodel$data$flow.2023 - mymodel$fitted.values) ^ 2) ^ 0.5
-  },
-  numeric(1))
-```
-
-#### AICc
-```{r}
-GLM_AICc <- vapply(GLM_models,
-                   function(mymodel) {
-                     extractAIC(mymodel)[2]
-                   },
-                   numeric(1)) 
-```
-
-
-### GWR
-
-```{r}
-GWPR_coef <- lapply(GWPR_models,
-                    function(mymodel){
-                      # table of GWR coefficients
-                      t1 = exp(apply(mymodel$SDF@data[, 1:4], 2, summary)) |> t()
-                      })
-```
-
-
-```{r}
-GWPR_coef_df <- do.call(rbind,lapply(GWPR_coef,\(x){
-  y <- as.data.frame(x)
-  y$id <- row.names(x)
-  y$catchment <- y |> mutate(catchid=str_extract(id,"c_\\d")) |> drop_na() |> pull(catchid) |> unique()
-  tibble(y) |> mutate(id = str_remove(id,paste0("_",catchment)))
+coefs_major <- do.call(bind_rows, lapply(my_models_major,\(x){
+  y = models_major[[x]] |> confint() |> exp() |> as.data.frame()
+  y$est <- models_major[[x]] |> coefficients() |> exp()
+  y$parameter <- row.names(y)
+  y$model <- x
+  return(tibble(y))
 }))
+
+
+coef_sum_major <- coefs_major |> 
+  rename(lowlim=`2.5 %`,highlim= `97.5 %`) |> 
+  mutate(mod_type = str_extract(model,"^\\w{1,3}(?=_)"),
+       Dist = str_extract(model,"(?<=\\.)\\w{1,2}")) |> 
+select(mod_type,Dist,parameter,est,lowlim,highlim)
+
 ```
+
 
 ```{r}
-ggplot(GWPR_coef_df)+
-  geom_linerange(aes(xmin =`1st Qu.`,xmax = `3rd Qu.`, y = catchment))+
-  facet_grid(.~id,scales = "free")
+save(model_metrics,
+     model_metrics_major,
+     model_validation,
+     model_validation_major,
+     coefs,
+     coefs_major,
+     file = "03_preprocessing_files/model_metrics.RData")
 ```
-
-#### RMSE
-```{r}
-GWPR_RMSE <- vapply(
-  GWPR_models,
-  function(mymodel) {
-    mean((mymodel$SDF$y - mymodel$SDF$yhat) ^ 2) ^ 0.5
-  },
-  numeric(1))
-```
-
-
-#### AICc
-```{r}
-GWPR_AICc <- vapply(GWPR_models,
-                   function(mymodel) {
-                     mymodel$glms$aic
-                   },
-                   numeric(1)) 
-```
-
-
-### Bayes Model
-```{r}
-library(posterior)
-lapply(Bayes_NBin_models,
-       function(mymodel){
-         mymodel |> as_draws_array() |> summarise_draws()
-       })
-```
-
-```{r}
-lapply(Bayes_NBin_models,plot)
-```
-
-### Null models
-null model to compare with fitted models
-
-#### GLM
-```{r}
-extractAIC(null.glm)[2]
-```
-
-#### GWPR
-```{r}
-# AICc for null GWR model
-null.gwpr$glms$aic
-```
-
-#### Bayesian Negative binomial
-```{r}
-
-```
-
-
-

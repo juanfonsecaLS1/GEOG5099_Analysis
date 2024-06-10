@@ -37,6 +37,7 @@ website:
         contents:
           - 2A_Mod_fit.qmd
           - 2B_Mod_eval.qmd
+          - 2C_Prediction.qmd
 format:
   html:
     toc: true
