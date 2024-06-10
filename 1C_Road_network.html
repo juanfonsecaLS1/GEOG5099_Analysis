@@ -254,6 +254,12 @@ window.Quarto = {
  <span class="menu-text">Model Evaluation</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./2C_Prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prediction</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -278,7 +284,7 @@ window.Quarto = {
   <li><a href="#road-density" id="toc-road-density" class="nav-link" data-scroll-target="#road-density">Road density</a></li>
   <li><a href="#junction-density" id="toc-junction-density" class="nav-link" data-scroll-target="#junction-density">Junction density</a></li>
   <li><a href="#centrality" id="toc-centrality" class="nav-link" data-scroll-target="#centrality">Centrality</a></li>
-  <li><a href="#catchment-for-major-roads" id="toc-catchment-for-major-roads" class="nav-link" data-scroll-target="#catchment-for-major-roads">Catchment for major roads</a></li>
+  <li><a href="#catchment-for-all-junctions" id="toc-catchment-for-all-junctions" class="nav-link" data-scroll-target="#catchment-for-all-junctions">Catchment for all junctions</a></li>
   <li><a href="#distance-from-minor-major-junctions" id="toc-distance-from-minor-major-junctions" class="nav-link" data-scroll-target="#distance-from-minor-major-junctions">Distance from minor-major junctions</a></li>
   </ul></li>
   <li><a href="#consolidating-all-data" id="toc-consolidating-all-data" class="nav-link" data-scroll-target="#consolidating-all-data">Consolidating all data</a></li>
@@ -594,15 +600,58 @@ Projected CRS: OSGB36 / British National Grid</code></pre>
 <span id="cb26-10"><a href="#cb26-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> road_type,<span class="at">values_from =</span> count) <span class="sc">|&gt;</span></span>
 <span id="cb26-11"><a href="#cb26-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> from_id)</span>
 <span id="cb26-12"><a href="#cb26-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>junctions_classed <span class="ot">&lt;-</span> junction_class_to <span class="sc">|&gt;</span> </span>
-<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(junction_class_from,<span class="at">by =</span> <span class="st">"id"</span>,<span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">".to"</span>,<span class="st">".from"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">jct_type =</span> <span class="fu">case_when</span>(<span class="fu">is.na</span>(minor.to)<span class="sc">&amp;</span><span class="fu">is.na</span>(minor.from)<span class="sc">~</span><span class="st">"major"</span>,</span>
-<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">is.na</span>(major.to)<span class="sc">&amp;</span><span class="fu">is.na</span>(major.from)<span class="sc">~</span><span class="st">"minor"</span>,</span>
-<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>                              (<span class="sc">!</span><span class="fu">is.na</span>(minor.to)<span class="sc">&amp;!</span><span class="fu">is.na</span>(major.from))<span class="sc">|</span></span>
-<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>                                (<span class="sc">!</span><span class="fu">is.na</span>(minor.from)<span class="sc">&amp;!</span><span class="fu">is.na</span>(major.to))<span class="sc">~</span><span class="st">"minmaj"</span>)) <span class="sc">|&gt;</span> </span>
-<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"m"</span>))</span>
-<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(junction_class_from,junction_class_to)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb26-13"><a href="#cb26-13" aria-hidden="true" tabindex="-1"></a>junctions_classed <span class="ot">&lt;-</span> junction_class_to <span class="sc">|&gt;</span> </span>
+<span id="cb26-14"><a href="#cb26-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">full_join</span>(junction_class_from,<span class="at">by =</span> <span class="st">"id"</span>,<span class="at">suffix =</span> <span class="fu">c</span>(<span class="st">".to"</span>,<span class="st">".from"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-15"><a href="#cb26-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">jct_type =</span> <span class="fu">case_when</span>(<span class="fu">is.na</span>(minor.to)<span class="sc">&amp;</span><span class="fu">is.na</span>(minor.from)<span class="sc">~</span><span class="st">"major"</span>,</span>
+<span id="cb26-16"><a href="#cb26-16" aria-hidden="true" tabindex="-1"></a>                              <span class="fu">is.na</span>(major.to)<span class="sc">&amp;</span><span class="fu">is.na</span>(major.from)<span class="sc">~</span><span class="st">"minor"</span>,</span>
+<span id="cb26-17"><a href="#cb26-17" aria-hidden="true" tabindex="-1"></a>                              (<span class="sc">!</span><span class="fu">is.na</span>(minor.to)<span class="sc">&amp;!</span><span class="fu">is.na</span>(major.from))<span class="sc">|</span></span>
+<span id="cb26-18"><a href="#cb26-18" aria-hidden="true" tabindex="-1"></a>                                (<span class="sc">!</span><span class="fu">is.na</span>(minor.from)<span class="sc">&amp;!</span><span class="fu">is.na</span>(major.to))<span class="sc">~</span><span class="st">"minmaj"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-19"><a href="#cb26-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span><span class="fu">starts_with</span>(<span class="st">"m"</span>))</span>
+<span id="cb26-20"><a href="#cb26-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-21"><a href="#cb26-21" aria-hidden="true" tabindex="-1"></a><span class="co"># To identify all junctions with at least a tertiary road</span></span>
+<span id="cb26-22"><a href="#cb26-22" aria-hidden="true" tabindex="-1"></a>junction_class_to_exp <span class="ot">&lt;-</span> graph_sf_flows <span class="sc">|&gt;</span></span>
+<span id="cb26-23"><a href="#cb26-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb26-24"><a href="#cb26-24" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>(),<span class="at">.by =</span> <span class="fu">c</span>(to_id,highway)) <span class="sc">|&gt;</span></span>
+<span id="cb26-25"><a href="#cb26-25" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> highway,<span class="at">values_from =</span> count)<span class="sc">|&gt;</span> </span>
+<span id="cb26-26"><a href="#cb26-26" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> to_id)</span>
+<span id="cb26-27"><a href="#cb26-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-28"><a href="#cb26-28" aria-hidden="true" tabindex="-1"></a>junction_class_from_exp <span class="ot">&lt;-</span> graph_sf_flows <span class="sc">|&gt;</span></span>
+<span id="cb26-29"><a href="#cb26-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_drop_geometry</span>() <span class="sc">|&gt;</span></span>
+<span id="cb26-30"><a href="#cb26-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">count =</span> <span class="fu">n</span>(),<span class="at">.by =</span> <span class="fu">c</span>(from_id,highway)) <span class="sc">|&gt;</span></span>
+<span id="cb26-31"><a href="#cb26-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(<span class="at">names_from =</span> highway,<span class="at">values_from =</span> count) <span class="sc">|&gt;</span></span>
+<span id="cb26-32"><a href="#cb26-32" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">id =</span> from_id)</span>
+<span id="cb26-33"><a href="#cb26-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-34"><a href="#cb26-34" aria-hidden="true" tabindex="-1"></a><span class="co"># A list of junctions with roas &gt; tertiary</span></span>
+<span id="cb26-35"><a href="#cb26-35" aria-hidden="true" tabindex="-1"></a>junctions_ids_exp  <span class="ot">&lt;-</span> junction_class_to_exp <span class="sc">|&gt;</span> </span>
+<span id="cb26-36"><a href="#cb26-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(junction_class_from_exp) <span class="sc">|&gt;</span> </span>
+<span id="cb26-37"><a href="#cb26-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(residential<span class="sc">:</span>secondary_link,\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),<span class="at">.by =</span> id) <span class="sc">|&gt;</span> </span>
+<span id="cb26-38"><a href="#cb26-38" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>id) <span class="sc">|&gt;</span> <span class="fu">filter</span>(value<span class="sc">&gt;</span><span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb26-39"><a href="#cb26-39" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mutate(type = !(name %in% c("residential","unclassified"))) |&gt; </span></span>
+<span id="cb26-40"><a href="#cb26-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">type =</span> <span class="sc">!</span>(name <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"residential"</span>))) <span class="sc">|&gt;</span></span>
+<span id="cb26-41"><a href="#cb26-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">type_tot =</span> <span class="fu">sum</span>(type)<span class="sc">&gt;</span><span class="dv">0</span>,<span class="at">.by =</span> id) <span class="sc">|&gt;</span> </span>
+<span id="cb26-42"><a href="#cb26-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(type_tot) <span class="sc">|&gt;</span></span>
+<span id="cb26-43"><a href="#cb26-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(id)</span>
+<span id="cb26-44"><a href="#cb26-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-45"><a href="#cb26-45" aria-hidden="true" tabindex="-1"></a>junctions_ids_exp_plot  <span class="ot">&lt;-</span> junction_class_to_exp <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">type =</span> <span class="st">"to"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb26-46"><a href="#cb26-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(junction_class_from_exp <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">type =</span> <span class="st">"from"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-47"><a href="#cb26-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(residential<span class="sc">:</span>secondary_link,\(x) <span class="fu">sum</span>(x,<span class="at">na.rm =</span> T)),<span class="at">.by =</span> <span class="fu">c</span>(id,type)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-48"><a href="#cb26-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span><span class="fu">c</span>(id,type)) <span class="sc">|&gt;</span></span>
+<span id="cb26-49"><a href="#cb26-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(value<span class="sc">&gt;</span><span class="dv">0</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb26-50"><a href="#cb26-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">str_remove</span>(name,<span class="st">"_link"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-51"><a href="#cb26-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">name =</span> <span class="fu">factor</span>(name,</span>
+<span id="cb26-52"><a href="#cb26-52" aria-hidden="true" tabindex="-1"></a>                       <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"trunk"</span>,<span class="st">"primary"</span>,<span class="st">"secondary"</span>,<span class="st">"tertiary"</span>,<span class="st">"unclassified"</span>, <span class="st">"residential"</span>),</span>
+<span id="cb26-53"><a href="#cb26-53" aria-hidden="true" tabindex="-1"></a>                       <span class="at">ordered =</span> T)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-54"><a href="#cb26-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="fu">across</span>(value,sum),<span class="at">.by=</span><span class="fu">c</span>(id,type,name)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-55"><a href="#cb26-55" aria-hidden="true" tabindex="-1"></a>  <span class="co"># mutate(name = as.integer(name)) |&gt; </span></span>
+<span id="cb26-56"><a href="#cb26-56" aria-hidden="true" tabindex="-1"></a>  <span class="fu">reframe</span>(<span class="at">min_type =</span> <span class="fu">range</span>(name)[<span class="dv">1</span>],</span>
+<span id="cb26-57"><a href="#cb26-57" aria-hidden="true" tabindex="-1"></a>          <span class="at">max_type =</span> <span class="fu">range</span>(name)[<span class="dv">2</span>],</span>
+<span id="cb26-58"><a href="#cb26-58" aria-hidden="true" tabindex="-1"></a>          <span class="at">.by=</span>id) <span class="sc">|&gt;</span> </span>
+<span id="cb26-59"><a href="#cb26-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">freq =</span> <span class="fu">n</span>(),<span class="at">.by =</span> <span class="fu">c</span>(min_type,max_type)) <span class="sc">|&gt;</span> </span>
+<span id="cb26-60"><a href="#cb26-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">dens=</span>freq<span class="sc">/</span><span class="fu">sum</span>())</span>
+<span id="cb26-61"><a href="#cb26-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-62"><a href="#cb26-62" aria-hidden="true" tabindex="-1"></a><span class="fu">write_rds</span>(junctions_ids_exp_plot,<span class="st">"03_preprocessing_files/junctions_ids_exp_plot.rds"</span>)    </span>
+<span id="cb26-63"><a href="#cb26-63" aria-hidden="true" tabindex="-1"></a>           </span>
+<span id="cb26-64"><a href="#cb26-64" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(junction_class_from,junction_class_to,junction_class_from_exp,junction_class_to_exp)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 <p>Mean incoming approach flows are calculated for all junctions, i.e.&nbsp;if a junction has 4 incoming roads/edges, an average of the 4 is calculated. Outgoing flows are not considered to avoid double-counting since the in and out flows should be the same.</p>
 <div class="cell">
@@ -770,12 +819,12 @@ all geometries</code></pre>
 </div>
 </div>
 </section>
-<section id="catchment-for-major-roads" class="level3">
-<h3 class="anchored" data-anchor-id="catchment-for-major-roads">Catchment for major roads</h3>
+<section id="catchment-for-all-junctions" class="level3">
+<h3 class="anchored" data-anchor-id="catchment-for-all-junctions">Catchment for all junctions</h3>
 <p>Points withing iso-chrone bands are extracted using the graph</p>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb44"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb44-1"><a href="#cb44-1" aria-hidden="true" tabindex="-1"></a>nodes_list <span class="ot">&lt;-</span> junctions_flows <span class="sc">|&gt;</span> </span>
-<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(jct_type<span class="sc">!=</span><span class="st">"minor"</span>) <span class="sc">|&gt;</span> <span class="fu">pull</span>(id) <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span>
+<span id="cb44-2"><a href="#cb44-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(id <span class="sc">%in%</span> junctions_ids_exp) <span class="sc">|&gt;</span> <span class="fu">pull</span>(id) <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span>
 <span id="cb44-3"><a href="#cb44-3" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb44-4"><a href="#cb44-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Distance bands</span></span>
 <span id="cb44-5"><a href="#cb44-5" aria-hidden="true" tabindex="-1"></a>tlim <span class="ot">&lt;-</span> <span class="fu">c</span> (<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>)<span class="sc">*</span><span class="dv">60</span></span>
@@ -789,8 +838,8 @@ all geometries</code></pre>
 <div class="cell-output cell-output-stderr">
 <pre><code>tmap mode set to plotting</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>nodes_sample <span class="ot">&lt;-</span><span class="fu">c</span>(<span class="st">"858681448"</span>, d <span class="sc">|&gt;</span></span>
-<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(from<span class="sc">==</span><span class="st">"858681448"</span>) <span class="sc">|&gt;</span> </span>
+<div class="sourceCode cell-code" id="cb47"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb47-1"><a href="#cb47-1" aria-hidden="true" tabindex="-1"></a>nodes_sample <span class="ot">&lt;-</span><span class="fu">c</span>(<span class="st">"21287149"</span>, d <span class="sc">|&gt;</span></span>
+<span id="cb47-2"><a href="#cb47-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(from<span class="sc">==</span><span class="st">"21287149"</span>) <span class="sc">|&gt;</span> </span>
 <span id="cb47-3"><a href="#cb47-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pull</span>(id))</span>
 <span id="cb47-4"><a href="#cb47-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb47-5"><a href="#cb47-5" aria-hidden="true" tabindex="-1"></a><span class="fu">tm_shape</span>(graph_sf <span class="sc">|&gt;</span> </span>
@@ -798,10 +847,10 @@ all geometries</code></pre>
 <span id="cb47-7"><a href="#cb47-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_lines</span>(<span class="st">"skyblue"</span>)<span class="sc">+</span></span>
 <span id="cb47-8"><a href="#cb47-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(d <span class="sc">|&gt;</span></span>
 <span id="cb47-9"><a href="#cb47-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">st_as_sf</span>(<span class="at">coords =</span> <span class="fu">c</span>(<span class="st">"x"</span>,<span class="st">"y"</span>),<span class="at">crs =</span> <span class="dv">4326</span>) <span class="sc">|&gt;</span></span>
-<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(from <span class="sc">==</span> <span class="st">"858681448"</span>))<span class="sc">+</span></span>
-<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="st">"tlim"</span>,<span class="at">size =</span> <span class="fl">0.1</span>,<span class="at">breaks =</span> <span class="fu">c</span> (<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>),<span class="at">title =</span> <span class="st">"Catchment (min)"</span>)<span class="sc">+</span></span>
+<span id="cb47-10"><a href="#cb47-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(from <span class="sc">==</span> <span class="st">"21287149"</span>))<span class="sc">+</span></span>
+<span id="cb47-11"><a href="#cb47-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="st">"tlim"</span>,<span class="at">size =</span> <span class="fl">0.1</span>,<span class="at">breaks =</span> <span class="fu">c</span> (<span class="dv">0</span>,<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>),<span class="at">style =</span> <span class="st">"cont"</span>,<span class="at">title =</span> <span class="st">"Catchment (min)"</span>)<span class="sc">+</span></span>
 <span id="cb47-12"><a href="#cb47-12" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_shape</span>(junctions_flows <span class="sc">|&gt;</span> </span>
-<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>             <span class="fu">filter</span>(id <span class="sc">==</span> <span class="st">"858681448"</span>))<span class="sc">+</span></span>
+<span id="cb47-13"><a href="#cb47-13" aria-hidden="true" tabindex="-1"></a>             <span class="fu">filter</span>(id <span class="sc">==</span> <span class="st">"21287149"</span>))<span class="sc">+</span></span>
 <span id="cb47-14"><a href="#cb47-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tm_dots</span>(<span class="st">"red"</span>,<span class="at">size =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>

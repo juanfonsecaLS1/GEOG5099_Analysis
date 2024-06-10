@@ -225,6 +225,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text">Model Evaluation</span></a>
   </div>
 </li>
+          <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./2C_Prediction.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">Prediction</span></a>
+  </div>
+</li>
       </ul>
   </li>
     </ul>
@@ -239,15 +245,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#load-model-data" id="toc-load-model-data" class="nav-link active" data-scroll-target="#load-model-data">Load model data</a>
   <ul class="collapse">
-  <li><a href="#data" id="toc-data" class="nav-link" data-scroll-target="#data">Data</a></li>
-  <li><a href="#fitted-models" id="toc-fitted-models" class="nav-link" data-scroll-target="#fitted-models">Fitted models</a></li>
-  </ul></li>
-  <li><a href="#model-comparison" id="toc-model-comparison" class="nav-link" data-scroll-target="#model-comparison">Model Comparison</a>
-  <ul class="collapse">
-  <li><a href="#glm" id="toc-glm" class="nav-link" data-scroll-target="#glm">GLM</a></li>
-  <li><a href="#gwr" id="toc-gwr" class="nav-link" data-scroll-target="#gwr">GWR</a></li>
-  <li><a href="#bayes-model" id="toc-bayes-model" class="nav-link" data-scroll-target="#bayes-model">Bayes Model</a></li>
-  <li><a href="#null-models" id="toc-null-models" class="nav-link" data-scroll-target="#null-models">Null models</a></li>
+  <li><a href="#producing-performance-metrics" id="toc-producing-performance-metrics" class="nav-link" data-scroll-target="#producing-performance-metrics">Producing performance metrics</a></li>
+  <li><a href="#extracting-coefficients" id="toc-extracting-coefficients" class="nav-link" data-scroll-target="#extracting-coefficients">Extracting coefficients</a></li>
   </ul></li>
   </ul>
 </nav>
@@ -286,265 +285,114 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <pre><code>── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 ✔ dplyr     1.1.4     ✔ readr     2.1.5
 ✔ forcats   1.0.0     ✔ stringr   1.5.1
-✔ ggplot2   3.5.0     ✔ tibble    3.2.1
+✔ ggplot2   3.5.1     ✔ tibble    3.2.1
 ✔ lubridate 1.9.3     ✔ tidyr     1.3.1
 ✔ purrr     1.0.2     
 ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
+✖ purrr::%||%()   masks base::%||%()
 ✖ dplyr::filter() masks stats::filter()
 ✖ dplyr::lag()    masks stats::lag()
 ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(broom)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(GWmodel)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidymodels)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Loading required package: robustbase
-Loading required package: sp
-Loading required package: Rcpp
-Welcome to GWmodel version 2.3-2.</code></pre>
+<pre><code>── Attaching packages ────────────────────────────────────── tidymodels 1.2.0 ──
+✔ broom        1.0.6      ✔ rsample      1.2.1 
+✔ dials        1.2.1      ✔ tune         1.2.1 
+✔ infer        1.0.7      ✔ workflows    1.1.4 
+✔ modeldata    1.3.0      ✔ workflowsets 1.1.0 
+✔ parsnip      1.2.1      ✔ yardstick    1.3.1 
+✔ recipes      1.0.10     
+── Conflicts ───────────────────────────────────────── tidymodels_conflicts() ──
+✖ purrr::%||%()     masks base::%||%()
+✖ scales::discard() masks purrr::discard()
+✖ dplyr::filter()   masks stats::filter()
+✖ recipes::fixed()  masks stringr::fixed()
+✖ dplyr::lag()      masks stats::lag()
+✖ yardstick::spec() masks readr::spec()
+✖ recipes::step()   masks stats::step()
+• Dig deeper into tidy modeling with R at https://www.tmwr.org</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(brms)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(performance)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Loading 'brms' package (version 2.21.0). Useful instructions
-can be found by typing help('brms'). A more detailed introduction
-to the package is available through vignette('brms_overview').
+<pre><code>
+Attaching package: 'performance'
 
-Attaching package: 'brms'
+The following objects are masked from 'package:yardstick':
 
-The following object is masked from 'package:robustbase':
-
-    epilepsy
-
-The following object is masked from 'package:stats':
-
-    ar</code></pre>
+    mae, rmse</code></pre>
 </div>
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
 <pre><code>Linking to GEOS 3.11.2, GDAL 3.8.2, PROJ 9.3.1; sf_use_s2() is TRUE</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(kableExtra)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>
+Attaching package: 'kableExtra'
+
+The following object is masked from 'package:dplyr':
+
+    group_rows</code></pre>
+</div>
 </div>
 <section id="load-model-data" class="level2">
 <h2 class="anchored" data-anchor-id="load-model-data">Load model data</h2>
-<section id="data" class="level3">
-<h3 class="anchored" data-anchor-id="data">Data</h3>
+<p>Loading the models previously fitted</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>model_data_expanded <span class="ot">&lt;-</span> <span class="fu">st_read</span>(<span class="st">"03_preprocessing_files/model_data.gpkg"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>Reading layer `model_data' from data source 
-  `C:\Users\ts18jpf\OneDrive - University of Leeds\02_MsC\99_GEOG5099M_Dissertation\GEOG5099_Analysis\03_preprocessing_files\model_data.gpkg' 
-  using driver `GPKG'
-Simple feature collection with 15076 features and 21 fields
-Geometry type: LINESTRING
-Dimension:     XY
-Bounding box:  xmin: 504496.7 ymin: 426324.9 xmax: 514189.2 ymax: 434477.1
-Projected CRS: OSGB36 / British National Grid</code></pre>
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"03_preprocessing_files/fitted_models.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a>model_data_noNAs<span class="ot">&lt;-</span> model_data_expanded <span class="sc">|&gt;</span> </span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(flow<span class="fl">.2022</span>,</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>         flow<span class="fl">.2023</span>,</span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>         centrality,</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>         car_avail_perc,</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>         total_pop_c_1<span class="sc">:</span>wk_pop_c_5,</span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a>         road_density) <span class="sc">|&gt;</span></span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="fitted-models" class="level3">
-<h3 class="anchored" data-anchor-id="fitted-models">Fitted models</h3>
+<section id="producing-performance-metrics" class="level3">
+<h3 class="anchored" data-anchor-id="producing-performance-metrics">Producing performance metrics</h3>
+<p>For the whole dataset</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">"03_preprocessing_files/fitted_models.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>model_metrics <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind,<span class="fu">lapply</span>(models,\(x){</span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  tAIC <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">performance_aicc</span>(x)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>  tpR2 <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">r2_efron</span>(x)</span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a>  trmse <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">rmse</span>(x)</span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a>  tmae <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">mae</span>(x)</span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">AIC =</span> tAIC, <span class="at">pR2 =</span> tpR2,<span class="at">rmse =</span> trmse, <span class="at">mae =</span> tmae)</span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a>})) <span class="sc">|&gt;</span> <span class="fu">cbind</span>(<span class="fu">tibble</span>(<span class="at">model =</span> <span class="fu">names</span>(models)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-</section>
-<section id="model-comparison" class="level2">
-<h2 class="anchored" data-anchor-id="model-comparison">Model Comparison</h2>
-<section id="glm" class="level3">
-<h3 class="anchored" data-anchor-id="glm">GLM</h3>
+<p>For major roads</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(GLM_models,</span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>         <span class="fu">summary</span>(mymodel)</span>
-<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>         }</span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>       )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]
-
-Call:
-glm(formula = myformula, family = poisson(), data = model_data_noNAs)
-
-Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)    8.5008357  0.0052873 1607.78   &lt;2e-16 ***
-total_pop_c_1 -0.1078251  0.0007680 -140.40   &lt;2e-16 ***
-wk_pop_c_1     0.0495180  0.0010195   48.57   &lt;2e-16 ***
-road_density   0.0205803  0.0001669  123.34   &lt;2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for poisson family taken to be 1)
-
-    Null deviance: 293492  on 132  degrees of freedom
-Residual deviance: 246681  on 129  degrees of freedom
-AIC: 248087
-
-Number of Fisher Scoring iterations: 5
-
-
-[[2]]
-
-Call:
-glm(formula = myformula, family = poisson(), data = model_data_noNAs)
-
-Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)    8.5457282  0.0055176  1548.8   &lt;2e-16 ***
-total_pop_c_2 -0.0319359  0.0002495  -128.0   &lt;2e-16 ***
-wk_pop_c_2     0.0154428  0.0003703    41.7   &lt;2e-16 ***
-road_density   0.0194783  0.0001731   112.6   &lt;2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for poisson family taken to be 1)
-
-    Null deviance: 293492  on 132  degrees of freedom
-Residual deviance: 250182  on 129  degrees of freedom
-AIC: 251588
-
-Number of Fisher Scoring iterations: 5
-
-
-[[3]]
-
-Call:
-glm(formula = myformula, family = poisson(), data = model_data_noNAs)
-
-Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)    8.6566663  0.0065606 1319.50   &lt;2e-16 ***
-total_pop_c_3 -0.0168852  0.0001541 -109.59   &lt;2e-16 ***
-wk_pop_c_3     0.0048641  0.0002416   20.13   &lt;2e-16 ***
-road_density   0.0179846  0.0001812   99.24   &lt;2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for poisson family taken to be 1)
-
-    Null deviance: 293492  on 132  degrees of freedom
-Residual deviance: 255385  on 129  degrees of freedom
-AIC: 256791
-
-Number of Fisher Scoring iterations: 5
-
-
-[[4]]
-
-Call:
-glm(formula = myformula, family = poisson(), data = model_data_noNAs)
-
-Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)    8.7813293  0.0079716 1101.57   &lt;2e-16 ***
-total_pop_c_4 -0.0131026  0.0001226 -106.86   &lt;2e-16 ***
-wk_pop_c_4     0.0064606  0.0001788   36.14   &lt;2e-16 ***
-road_density   0.0142349  0.0001928   73.85   &lt;2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for poisson family taken to be 1)
-
-    Null deviance: 293492  on 132  degrees of freedom
-Residual deviance: 255149  on 129  degrees of freedom
-AIC: 256555
-
-Number of Fisher Scoring iterations: 5
-
-
-[[5]]
-
-Call:
-glm(formula = myformula, family = poisson(), data = model_data_noNAs)
-
-Coefficients:
-                Estimate Std. Error z value Pr(&gt;|z|)    
-(Intercept)    8.7657205  0.0091162  961.55   &lt;2e-16 ***
-total_pop_c_5 -0.0088224  0.0001062  -83.09   &lt;2e-16 ***
-wk_pop_c_5     0.0032043  0.0001404   22.82   &lt;2e-16 ***
-road_density   0.0162041  0.0001981   81.81   &lt;2e-16 ***
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
-
-(Dispersion parameter for poisson family taken to be 1)
-
-    Null deviance: 293492  on 132  degrees of freedom
-Residual deviance: 260928  on 129  degrees of freedom
-AIC: 262334
-
-Number of Fisher Scoring iterations: 5</code></pre>
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>model_metrics_major <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind,<span class="fu">lapply</span>(models_major,\(x){</span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>  tAIC <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">performance_aicc</span>(x)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>  tpR2 <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">r2_efron</span>(x)</span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a>  trmse <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">rmse</span>(x)</span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a>  tmae <span class="ot">=</span> performance<span class="sc">::</span><span class="fu">mae</span>(x)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">AIC =</span> tAIC, <span class="at">pR2 =</span> tpR2,<span class="at">rmse =</span> trmse, <span class="at">mae =</span> tmae)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a>})) <span class="sc">|&gt;</span> <span class="fu">cbind</span>(<span class="fu">tibble</span>(<span class="at">model =</span> <span class="fu">names</span>(models_major)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</div>
+<section id="validating-the-predictive-performance" class="level4">
+<h4 class="anchored" data-anchor-id="validating-the-predictive-performance">Validating the predictive performance</h4>
+<p>For all dataset</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>GLM_coef <span class="ot">&lt;-</span> <span class="fu">lapply</span>(GLM_models,</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>         beta <span class="ot">&lt;-</span> <span class="fu">coef</span>(mymodel)</span>
-<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>         <span class="fu">exp</span>(<span class="fu">confint</span>(mymodel,<span class="at">level =</span> <span class="fl">0.95</span>))</span>
-<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a>       })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>model_validation <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind,<span class="fu">lapply</span>(models,\(x){</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">rmse =</span> caret<span class="sc">::</span><span class="fu">RMSE</span>(<span class="fu">predict</span>(x,test_data,<span class="at">type =</span> <span class="st">"response"</span>),<span class="at">obs =</span> test_data<span class="sc">$</span>flow<span class="fl">.2023</span>,<span class="at">na.rm =</span> T),</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">mae =</span> caret<span class="sc">::</span><span class="fu">MAE</span>(<span class="fu">predict</span>(x,test_data,<span class="at">type =</span> <span class="st">"response"</span>),<span class="at">obs =</span> test_data<span class="sc">$</span>flow<span class="fl">.2023</span>,<span class="at">na.rm =</span> T))</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>}))<span class="sc">|&gt;</span> <span class="fu">cbind</span>(<span class="fu">tibble</span>(<span class="at">model =</span> <span class="fu">names</span>(models)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>For major roads</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>model_validation_major <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind,<span class="fu">lapply</span>(models_major,\(x){</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(<span class="at">rmse =</span> caret<span class="sc">::</span><span class="fu">RMSE</span>(<span class="fu">predict</span>(x,test_data_major,<span class="at">type =</span> <span class="st">"response"</span>),<span class="at">obs =</span> test_data_major<span class="sc">$</span>flow<span class="fl">.2023</span>,<span class="at">na.rm =</span> T),</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>         <span class="at">mae =</span> caret<span class="sc">::</span><span class="fu">MAE</span>(<span class="fu">predict</span>(x,test_data_major,<span class="at">type =</span> <span class="st">"response"</span>),<span class="at">obs =</span> test_data_major<span class="sc">$</span>flow<span class="fl">.2023</span>,<span class="at">na.rm =</span> T))</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>}))<span class="sc">|&gt;</span> <span class="fu">cbind</span>(<span class="fu">tibble</span>(<span class="at">model =</span> <span class="fu">names</span>(models_major)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>All dataset</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb16"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>model_metrics <span class="sc">|&gt;</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>model) <span class="sc">|&gt;</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(name <span class="sc">!=</span><span class="st">"AIC"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mod_type =</span> <span class="fu">str_extract</span>(model,<span class="st">"^</span><span class="sc">\\</span><span class="st">w"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(value,<span class="at">fill =</span> mod_type))<span class="sc">+</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()<span class="sc">+</span></span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(name<span class="sc">~</span>.,<span class="at">nrow =</span> <span class="dv">1</span>,<span class="at">scales =</span> <span class="st">"free_x"</span>)<span class="sc">+</span></span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>Waiting for profiling to be done...
-Waiting for profiling to be done...
-Waiting for profiling to be done...
-Waiting for profiling to be done...
-Waiting for profiling to be done...</code></pre>
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>GLM_coef</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]
-                     2.5 %       97.5 %
-(Intercept)   4868.1426366 4970.0921446
-total_pop_c_1    0.8964337    0.8991365
-wk_pop_c_1       1.0486661    1.0528654
-road_density     1.0204598    1.0211275
-
-[[2]]
-                     2.5 %       97.5 %
-(Intercept)   5089.3745376 5200.6504766
-total_pop_c_2    0.9680951    0.9690423
-wk_pop_c_2       1.0148257    1.0163000
-road_density     1.0193236    1.0200153
-
-[[3]]
-                     2.5 %       97.5 %
-(Intercept)   5674.8814597 5822.7151361
-total_pop_c_3    0.9829597    0.9835535
-wk_pop_c_3       1.0044002    1.0053520
-road_density     1.0177858    1.0185091
-
-[[4]]
-                     2.5 %       97.5 %
-(Intercept)   6410.5522822 6614.0335851
-total_pop_c_4    0.9867457    0.9872201
-wk_pop_c_4       1.0061290    1.0068343
-road_density     1.0139537    1.0147201
-
-[[5]]
-                     2.5 %       97.5 %
-(Intercept)   6297.1054156 6526.2017673
-total_pop_c_5    0.9910101    0.9914227
-wk_pop_c_5       1.0029334    1.0034856
-road_density     1.0159417    1.0167308</code></pre>
-</div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb19"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>GLM_coef_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind,<span class="fu">lapply</span>(GLM_coef,\(x){</span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(x)</span>
-<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>id <span class="ot">&lt;-</span> <span class="fu">row.names</span>(x)</span>
-<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>catchment <span class="ot">&lt;-</span> y <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">catchid=</span><span class="fu">str_extract</span>(id,<span class="st">"c_</span><span class="sc">\\</span><span class="st">d"</span>)) <span class="sc">|&gt;</span> <span class="fu">drop_na</span>() <span class="sc">|&gt;</span> <span class="fu">pull</span>(catchid) <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span>
-<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(y) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">str_remove</span>(id,<span class="fu">paste0</span>(<span class="st">"_"</span>,catchment)))</span>
-<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(GLM_coef_df)<span class="sc">+</span></span>
-<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">xmin =</span><span class="st">`</span><span class="at">2.5 %</span><span class="st">`</span>,<span class="at">xmax =</span> <span class="st">`</span><span class="at">97.5 %</span><span class="st">`</span>, <span class="at">y =</span> catchment))<span class="sc">+</span></span>
-<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(.<span class="sc">~</span>id,<span class="at">scales =</span> <span class="st">"free"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 <div>
 <figure class="figure">
@@ -553,305 +401,165 @@ road_density     1.0159417    1.0167308</code></pre>
 </div>
 </div>
 </div>
-<section id="rmse" class="level4">
-<h4 class="anchored" data-anchor-id="rmse">RMSE</h4>
+<p>Major dataset</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>GLM_RMSE <span class="ot">&lt;-</span> <span class="fu">vapply</span>(</span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  GLM_models,</span>
-<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(mymodel) {</span>
-<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>((mymodel<span class="sc">$</span>data<span class="sc">$</span>flow<span class="fl">.2023</span> <span class="sc">-</span> mymodel<span class="sc">$</span>fitted.values) <span class="sc">^</span> <span class="dv">2</span>) <span class="sc">^</span> <span class="fl">0.5</span></span>
-<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  },</span>
-<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="aicc" class="level4">
-<h4 class="anchored" data-anchor-id="aicc">AICc</h4>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb22"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a>GLM_AICc <span class="ot">&lt;-</span> <span class="fu">vapply</span>(GLM_models,</span>
-<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">function</span>(mymodel) {</span>
-<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a>                     <span class="fu">extractAIC</span>(mymodel)[<span class="dv">2</span>]</span>
-<span id="cb22-4"><a href="#cb22-4" aria-hidden="true" tabindex="-1"></a>                   },</span>
-<span id="cb22-5"><a href="#cb22-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">numeric</span>(<span class="dv">1</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-</section>
-<section id="gwr" class="level3">
-<h3 class="anchored" data-anchor-id="gwr">GWR</h3>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>GWPR_coef <span class="ot">&lt;-</span> <span class="fu">lapply</span>(GWPR_models,</span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>                    <span class="cf">function</span>(mymodel){</span>
-<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>                      <span class="co"># table of GWR coefficients</span></span>
-<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>                      t1 <span class="ot">=</span> <span class="fu">exp</span>(<span class="fu">apply</span>(mymodel<span class="sc">$</span>SDF<span class="sc">@</span>data[, <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>], <span class="dv">2</span>, summary)) <span class="sc">|&gt;</span> <span class="fu">t</span>()</span>
-<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>                      })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb24"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a>GWPR_coef_df <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind,<span class="fu">lapply</span>(GWPR_coef,\(x){</span>
-<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">&lt;-</span> <span class="fu">as.data.frame</span>(x)</span>
-<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>id <span class="ot">&lt;-</span> <span class="fu">row.names</span>(x)</span>
-<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>catchment <span class="ot">&lt;-</span> y <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">catchid=</span><span class="fu">str_extract</span>(id,<span class="st">"c_</span><span class="sc">\\</span><span class="st">d"</span>)) <span class="sc">|&gt;</span> <span class="fu">drop_na</span>() <span class="sc">|&gt;</span> <span class="fu">pull</span>(catchid) <span class="sc">|&gt;</span> <span class="fu">unique</span>()</span>
-<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">tibble</span>(y) <span class="sc">|&gt;</span> <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">str_remove</span>(id,<span class="fu">paste0</span>(<span class="st">"_"</span>,catchment)))</span>
-<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(GWPR_coef_df)<span class="sc">+</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_linerange</span>(<span class="fu">aes</span>(<span class="at">xmin =</span><span class="st">`</span><span class="at">1st Qu.</span><span class="st">`</span>,<span class="at">xmax =</span> <span class="st">`</span><span class="at">3rd Qu.</span><span class="st">`</span>, <span class="at">y =</span> catchment))<span class="sc">+</span></span>
-<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_grid</span>(.<span class="sc">~</span>id,<span class="at">scales =</span> <span class="st">"free"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-12-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-</div>
-<section id="rmse-1" class="level4">
-<h4 class="anchored" data-anchor-id="rmse-1">RMSE</h4>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb26"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a>GWPR_RMSE <span class="ot">&lt;-</span> <span class="fu">vapply</span>(</span>
-<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a>  GWPR_models,</span>
-<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(mymodel) {</span>
-<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mean</span>((mymodel<span class="sc">$</span>SDF<span class="sc">$</span>y <span class="sc">-</span> mymodel<span class="sc">$</span>SDF<span class="sc">$</span>yhat) <span class="sc">^</span> <span class="dv">2</span>) <span class="sc">^</span> <span class="fl">0.5</span></span>
-<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a>  },</span>
-<span id="cb26-6"><a href="#cb26-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">numeric</span>(<span class="dv">1</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-<section id="aicc-1" class="level4">
-<h4 class="anchored" data-anchor-id="aicc-1">AICc</h4>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>GWPR_AICc <span class="ot">&lt;-</span> <span class="fu">vapply</span>(GWPR_models,</span>
-<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>                   <span class="cf">function</span>(mymodel) {</span>
-<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>                     mymodel<span class="sc">$</span>glms<span class="sc">$</span>aic</span>
-<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>                   },</span>
-<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>                   <span class="fu">numeric</span>(<span class="dv">1</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</div>
-</section>
-</section>
-<section id="bayes-model" class="level3">
-<h3 class="anchored" data-anchor-id="bayes-model">Bayes Model</h3>
-<div class="cell">
-<div class="sourceCode cell-code" id="cb28"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(posterior)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb18"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>model_metrics_major <span class="sc">|&gt;</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="sc">-</span>model) <span class="sc">|&gt;</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(name <span class="sc">!=</span><span class="st">"AIC"</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mod_type =</span> <span class="fu">str_extract</span>(model,<span class="st">"^</span><span class="sc">\\</span><span class="st">w"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ggplot</span>(<span class="fu">aes</span>(value,<span class="at">fill =</span> mod_type))<span class="sc">+</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>()<span class="sc">+</span></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">facet_wrap</span>(name<span class="sc">~</span>.,<span class="at">nrow =</span> <span class="dv">1</span>,<span class="at">scales =</span> <span class="st">"free_x"</span>)<span class="sc">+</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme</span>(<span class="at">legend.position =</span> <span class="st">"top"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stderr">
-<pre><code>This is posterior version 1.5.0</code></pre>
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>
-Attaching package: 'posterior'</code></pre>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-8-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:stats':
-
-    mad, sd, var</code></pre>
 </div>
-<div class="cell-output cell-output-stderr">
-<pre><code>The following objects are masked from 'package:base':
-
-    %in%, match</code></pre>
 </div>
-<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(Bayes_NBin_models,</span>
-<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>       <span class="cf">function</span>(mymodel){</span>
-<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>         mymodel <span class="sc">|&gt;</span> <span class="fu">as_draws_array</span>() <span class="sc">|&gt;</span> <span class="fu">summarise_draws</span>()</span>
-<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>       })</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]
-# A tibble: 8 × 10
-  variable        mean   median      sd     mad       q5      q95  rhat ess_bulk
-  &lt;chr&gt;          &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
-1 b_Intercept  8.49e+0  8.48e+0 0.260   0.261    8.08e+0  8.93e+0  1.00    5615.
-2 b_total_po… -1.14e-1 -1.14e-1 0.0393  0.0402  -1.78e-1 -5.03e-2  1.00    4539.
-3 b_wk_pop_c…  5.88e-2  5.68e-2 0.0585  0.0596  -3.54e-2  1.56e-1  1.00    5070.
-4 b_road_den…  2.13e-2  2.14e-2 0.00832 0.00846  7.50e-3  3.50e-2  1.00    5470.
-5 shape        2.71e+0  2.70e+0 0.321   0.326    2.20e+0  3.25e+0  1.00    4481.
-6 Intercept    8.87e+0  8.87e+0 0.0543  0.0551   8.78e+0  8.96e+0  1.00    5184.
-7 lprior      -4.70e+0 -4.70e+0 0.153   0.156   -4.94e+0 -4.44e+0  1.00    4492.
-8 lp__        -1.29e+3 -1.29e+3 1.65    1.42    -1.29e+3 -1.29e+3  1.00    1683.
-# ℹ 1 more variable: ess_tail &lt;dbl&gt;
-
-[[2]]
-# A tibble: 8 × 10
-  variable        mean   median      sd     mad       q5      q95  rhat ess_bulk
-  &lt;chr&gt;          &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
-1 b_Intercept  8.53e+0  8.53e+0 0.262   0.258    8.10e+0  8.97e+0  1.00    4962.
-2 b_total_po… -3.45e-2 -3.44e-2 0.0133  0.0133  -5.63e-2 -1.26e-2  1.00    5010.
-3 b_wk_pop_c…  1.83e-2  1.83e-2 0.0197  0.0195  -1.39e-2  5.07e-2  1.00    4562.
-4 b_road_den…  2.03e-2  2.03e-2 0.00844 0.00836  6.57e-3  3.42e-2  1.00    4600.
-5 shape        2.69e+0  2.67e+0 0.315   0.305    2.19e+0  3.23e+0  1.00    4626.
-6 Intercept    8.87e+0  8.87e+0 0.0536  0.0523   8.78e+0  8.96e+0  1.00    4071.
-7 lprior      -4.68e+0 -4.68e+0 0.150   0.147   -4.93e+0 -4.43e+0  1.00    4629.
-8 lp__        -1.29e+3 -1.29e+3 1.57    1.44    -1.29e+3 -1.29e+3  1.00    1848.
-# ℹ 1 more variable: ess_tail &lt;dbl&gt;
-
-[[3]]
-# A tibble: 8 × 10
-  variable        mean   median      sd     mad       q5      q95  rhat ess_bulk
-  &lt;chr&gt;          &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
-1 b_Intercept  8.63e+0  8.63e+0 0.336   0.341    8.08e+0  9.19e+0  1.00    4645.
-2 b_total_po… -1.76e-2 -1.75e-2 0.00851 0.00850 -3.14e-2 -3.75e-3  1.00    4522.
-3 b_wk_pop_c…  5.94e-3  5.90e-3 0.0127  0.0131  -1.49e-2  2.62e-2  1.00    4754.
-4 b_road_den…  1.92e-2  1.92e-2 0.00907 0.00885  4.13e-3  3.37e-2  1.00    4706.
-5 shape        2.63e+0  2.62e+0 0.317   0.315    2.13e+0  3.18e+0  1.00    4534.
-6 Intercept    8.87e+0  8.87e+0 0.0548  0.0554   8.78e+0  8.96e+0  1.00    4446.
-7 lprior      -4.66e+0 -4.66e+0 0.155   0.155   -4.91e+0 -4.40e+0  1.00    4537.
-8 lp__        -1.29e+3 -1.29e+3 1.61    1.43    -1.29e+3 -1.29e+3  1.00    1828.
-# ℹ 1 more variable: ess_tail &lt;dbl&gt;
-
-[[4]]
-# A tibble: 8 × 10
-  variable        mean   median      sd     mad       q5      q95  rhat ess_bulk
-  &lt;chr&gt;          &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
-1 b_Intercept  8.72e+0  8.72e+0 0.410   0.404    8.06e+0  9.41e+0  1.00    4223.
-2 b_total_po… -1.26e-2 -1.27e-2 0.00661 0.00660 -2.36e-2 -1.79e-3  1.00    4537.
-3 b_wk_pop_c…  6.27e-3  6.26e-3 0.00889 0.00877 -8.31e-3  2.06e-2  1.00    4447.
-4 b_road_den…  1.62e-2  1.64e-2 0.00968 0.00969 -2.25e-5  3.17e-2  1.00    4206.
-5 shape        2.64e+0  2.62e+0 0.312   0.309    2.15e+0  3.18e+0  1.00    4353.
-6 Intercept    8.87e+0  8.87e+0 0.0537  0.0527   8.79e+0  8.96e+0  1.00    4777.
-7 lprior      -4.66e+0 -4.66e+0 0.152   0.152   -4.91e+0 -4.41e+0  1.00    4355.
-8 lp__        -1.29e+3 -1.29e+3 1.61    1.43    -1.29e+3 -1.29e+3  1.00    1799.
-# ℹ 1 more variable: ess_tail &lt;dbl&gt;
-
-[[5]]
-# A tibble: 8 × 10
-  variable        mean   median      sd     mad       q5      q95  rhat ess_bulk
-  &lt;chr&gt;          &lt;dbl&gt;    &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
-1 b_Intercept  8.69e+0  8.68e+0 0.478   0.476    7.92e+0  9.48e+0  1.00    4579.
-2 b_total_po… -7.84e-3 -7.71e-3 0.00552 0.00545 -1.69e-2  1.11e-3  1.00    4206.
-3 b_wk_pop_c…  2.49e-3  2.50e-3 0.00701 0.00709 -9.08e-3  1.38e-2  1.00    5405.
-4 b_road_den…  1.85e-2  1.87e-2 0.0103  0.0104   1.77e-3  3.49e-2  1.00    4272.
-5 shape        2.60e+0  2.59e+0 0.304   0.298    2.13e+0  3.12e+0  1.00    4334.
-6 Intercept    8.88e+0  8.87e+0 0.0541  0.0533   8.79e+0  8.97e+0  1.00    4706.
-7 lprior      -4.64e+0 -4.64e+0 0.150   0.148   -4.88e+0 -4.39e+0  1.00    4340.
-8 lp__        -1.29e+3 -1.29e+3 1.59    1.38    -1.29e+3 -1.29e+3  1.00    1967.
-# ℹ 1 more variable: ess_tail &lt;dbl&gt;</code></pre>
+<p>A quick look of the observed vs predicted using the validation subset</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb20"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(<span class="at">x=</span><span class="fu">predict</span>(models[[<span class="st">"B1c_model.nb"</span>]],test_data,<span class="at">type =</span> <span class="st">"response"</span>),<span class="at">y=</span>test_data<span class="sc">$</span>flow<span class="fl">.2023</span>,<span class="at">xlim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">1e4</span>),<span class="at">ylim =</span> <span class="fu">c</span>(<span class="dv">0</span>,<span class="fl">2e4</span>))</span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">abline</span>(<span class="at">a =</span> <span class="dv">0</span>,<span class="at">b =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-9-1.png" class="img-fluid figure-img" width="672"></p>
+</figure>
+</div>
 </div>
 </div>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb35"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(Bayes_NBin_models,plot)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-1.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-2.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-3.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-4.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-5.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[[1]]
-[[1]][[1]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-6.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+<div class="sourceCode cell-code" id="cb21"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>models<span class="sc">$</span>C5a_model.nb <span class="sc">|&gt;</span> <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
+Call:
+MASS::glm.nb(formula = as.formula(x), data = train_data, init.theta = 2.874591785, 
+    link = log)
 
-[[2]]
-[[2]][[1]]</code></pre>
+Coefficients:
+               Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    8.654502   0.367513  23.549   &lt;2e-16 ***
+road_density   0.022848   0.009488   2.408   0.0160 *  
+total_pop_c_5 -0.006892   0.002759  -2.498   0.0125 *  
+wk_pop_c_1     0.140714   0.117649   1.196   0.2317    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+(Dispersion parameter for Negative Binomial(2.8746) family taken to be 1)
+
+    Null deviance: 130.76  on 102  degrees of freedom
+Residual deviance: 108.96  on  99  degrees of freedom
+  (9 observations deleted due to missingness)
+AIC: 1997.4
+
+Number of Fisher Scoring iterations: 1
+
+              Theta:  2.875 
+          Std. Err.:  0.380 
+
+ 2 x log-likelihood:  -1987.385 </code></pre>
 </div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-7.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
+<div class="sourceCode cell-code" id="cb23"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>models<span class="sc">$</span>C5a_model.p<span class="sc">|&gt;</span> <span class="fu">summary</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
 <pre><code>
+Call:
+glm(formula = as.formula(x), family = "poisson", data = train_data)
 
-[[3]]
-[[3]][[1]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-8.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
+Coefficients:
+                Estimate Std. Error z value Pr(&gt;|z|)    
+(Intercept)    8.797e+00  7.675e-03 1146.25   &lt;2e-16 ***
+road_density   1.927e-02  2.039e-04   94.48   &lt;2e-16 ***
+total_pop_c_5 -7.568e-03  5.298e-05 -142.86   &lt;2e-16 ***
+wk_pop_c_1     1.348e-01  2.197e-03   61.33   &lt;2e-16 ***
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 
-[[4]]
-[[4]][[1]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-9.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
-</div>
-<div class="cell-output cell-output-stdout">
-<pre><code>
+(Dispersion parameter for poisson family taken to be 1)
 
-[[5]]
-[[5]][[1]]</code></pre>
-</div>
-<div class="cell-output-display">
-<div>
-<figure class="figure">
-<p><img src="2B_Mod_eval_files/figure-html/unnamed-chunk-16-10.png" class="img-fluid figure-img" width="672"></p>
-</figure>
-</div>
+    Null deviance: 232130  on 102  degrees of freedom
+Residual deviance: 177823  on  99  degrees of freedom
+  (9 observations deleted due to missingness)
+AIC: 178916
+
+Number of Fisher Scoring iterations: 5</code></pre>
 </div>
 </div>
 </section>
-<section id="null-models" class="level3">
-<h3 class="anchored" data-anchor-id="null-models">Null models</h3>
-<p>null model to compare with fitted models</p>
-<section id="glm-1" class="level4">
-<h4 class="anchored" data-anchor-id="glm-1">GLM</h4>
+</section>
+<section id="extracting-coefficients" class="level3">
+<h3 class="anchored" data-anchor-id="extracting-coefficients">Extracting coefficients</h3>
+<p>For the whole dataset</p>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb41"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="fu">extractAIC</span>(null.glm)[<span class="dv">2</span>]</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb25"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>my_models <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"A_model.p"</span>,<span class="st">"A_model.nb"</span>,<span class="st">"B5b_model.p"</span>,<span class="st">"B5b_model.nb"</span>,<span class="st">"C2a_model.p"</span>,<span class="st">"C2a_model.nb"</span>)</span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>my_models <span class="sc">%in%</span> <span class="fu">names</span>(models)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>[1] 294891.4</code></pre>
+<pre><code>[1] TRUE TRUE TRUE TRUE TRUE TRUE</code></pre>
 </div>
 </div>
-</section>
-<section id="gwpr" class="level4">
-<h4 class="anchored" data-anchor-id="gwpr">GWPR</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb43"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb43-1"><a href="#cb43-1" aria-hidden="true" tabindex="-1"></a><span class="co"># AICc for null GWR model</span></span>
-<span id="cb43-2"><a href="#cb43-2" aria-hidden="true" tabindex="-1"></a>null.gwpr<span class="sc">$</span>glms<span class="sc">$</span>aic</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>[1] 293493.6</code></pre>
+<div class="sourceCode cell-code" id="cb27"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a>coefs <span class="ot">&lt;-</span> <span class="fu">do.call</span>(bind_rows, <span class="fu">lapply</span>(my_models,\(x){</span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">=</span> models[[x]] <span class="sc">|&gt;</span> <span class="fu">confint</span>() <span class="sc">|&gt;</span> <span class="fu">exp</span>() <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>est <span class="ot">&lt;-</span> models[[x]] <span class="sc">|&gt;</span> <span class="fu">coefficients</span>() <span class="sc">|&gt;</span> <span class="fu">exp</span>()</span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>parameter <span class="ot">&lt;-</span> <span class="fu">row.names</span>(y)</span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>model <span class="ot">&lt;-</span> x</span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">tibble</span>(y))</span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting for profiling to be done...
+Waiting for profiling to be done...
+Waiting for profiling to be done...
+Waiting for profiling to be done...
+Waiting for profiling to be done...
+Waiting for profiling to be done...</code></pre>
 </div>
+<div class="sourceCode cell-code" id="cb29"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a>coef_sum <span class="ot">&lt;-</span> coefs <span class="sc">|&gt;</span> </span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">lowlim=</span><span class="st">`</span><span class="at">2.5 %</span><span class="st">`</span>,<span class="at">highlim=</span> <span class="st">`</span><span class="at">97.5 %</span><span class="st">`</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mod_type =</span> <span class="fu">str_extract</span>(model,<span class="st">"^</span><span class="sc">\\</span><span class="st">w{1,3}(?=_)"</span>),</span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">Dist =</span> <span class="fu">str_extract</span>(model,<span class="st">"(?&lt;=</span><span class="sc">\\</span><span class="st">.)</span><span class="sc">\\</span><span class="st">w{1,2}"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(mod_type,Dist,parameter,est,lowlim,highlim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-</section>
-<section id="bayesian-negative-binomial" class="level4">
-<h4 class="anchored" data-anchor-id="bayesian-negative-binomial">Bayesian Negative binomial</h4>
+<p>For major roads</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb30"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a>my_models_major <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"B4b_model.p"</span>,<span class="st">"B4b_model.nb"</span>,<span class="st">"C1b_model.p"</span>,<span class="st">"C1b_model.nb"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb31"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a>coefs_major <span class="ot">&lt;-</span> <span class="fu">do.call</span>(bind_rows, <span class="fu">lapply</span>(my_models_major,\(x){</span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  y <span class="ot">=</span> models_major[[x]] <span class="sc">|&gt;</span> <span class="fu">confint</span>() <span class="sc">|&gt;</span> <span class="fu">exp</span>() <span class="sc">|&gt;</span> <span class="fu">as.data.frame</span>()</span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>est <span class="ot">&lt;-</span> models_major[[x]] <span class="sc">|&gt;</span> <span class="fu">coefficients</span>() <span class="sc">|&gt;</span> <span class="fu">exp</span>()</span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>parameter <span class="ot">&lt;-</span> <span class="fu">row.names</span>(y)</span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  y<span class="sc">$</span>model <span class="ot">&lt;-</span> x</span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">return</span>(<span class="fu">tibble</span>(y))</span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>}))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>Waiting for profiling to be done...
+Waiting for profiling to be done...
+Waiting for profiling to be done...
+Waiting for profiling to be done...</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb33"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>coef_sum_major <span class="ot">&lt;-</span> coefs_major <span class="sc">|&gt;</span> </span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">lowlim=</span><span class="st">`</span><span class="at">2.5 %</span><span class="st">`</span>,<span class="at">highlim=</span> <span class="st">`</span><span class="at">97.5 %</span><span class="st">`</span>) <span class="sc">|&gt;</span> </span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mod_type =</span> <span class="fu">str_extract</span>(model,<span class="st">"^</span><span class="sc">\\</span><span class="st">w{1,3}(?=_)"</span>),</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>       <span class="at">Dist =</span> <span class="fu">str_extract</span>(model,<span class="st">"(?&lt;=</span><span class="sc">\\</span><span class="st">.)</span><span class="sc">\\</span><span class="st">w{1,2}"</span>)) <span class="sc">|&gt;</span> </span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a><span class="fu">select</span>(mod_type,Dist,parameter,est,lowlim,highlim)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb34"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="fu">save</span>(model_metrics,</span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>     model_metrics_major,</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>     model_validation,</span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a>     model_validation_major,</span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a>     coefs,</span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a>     coefs_major,</span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a>     <span class="at">file =</span> <span class="st">"03_preprocessing_files/model_metrics.RData"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
 
 
-</section>
 </section>
 </section>
 
